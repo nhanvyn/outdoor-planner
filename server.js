@@ -1,25 +1,38 @@
 const express = require('express');
+const path = require('path')
 const axios = require('axios');
 
 const app = express();
+// for reading environment variable
 const dotenv = require('dotenv');
 dotenv.config();
 
 const PORT = process.env.PORT || 3500;
 const KEY = process.env.weather_api_key;
+
+app.use('/', express.static(path.join(__dirname, '/public')));
+app.use('/', require('./routes/root'));
+
+app.all('*', (req, res) => {
+  res.status(404);
+  res.sendFile(path.join(__dirname, 'views', '404.html'));
+})
+
+
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
 
 let city = 'Coquitlam'
 
-axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${KEY}`)
-  .then(function (response) {
-    // handle success
-    console.log(response.data.weather[0]);
-  })
-  .catch(function (error) {
-    // handle error
-    console.log(error);
-  })
-  .finally(function () {
-    // always executed
-  });
+// axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${KEY}`)
+//   .then(function (response) {
+//     // handle success
+//     console.log(response.data.weather[0]);
+//   })
+//   .catch(function (error) {
+//     // handle error
+//     console.log(error);
+//   })
+//   .finally(function () {
+//     // always executed
+//   });
+
