@@ -3,6 +3,7 @@ const path = require('path')
 const axios = require('axios');
 const mongoose = require('mongoose')
 const connectToDB = require('./config/dbConfig.js')
+const cookieParser = require('cookie-parser')
 
 
 
@@ -15,9 +16,12 @@ connectToDB();
 const PORT = process.env.PORT || 3500;
 const KEY = process.env.weather_api_key;
 
+app.use(express.json())
+app.use(cookieParser())
 app.use('/', express.static(path.join(__dirname, '/public')));
 app.use('/', require('./routes/root'));
 app.use('/users', require('./routes/userRoutes'));
+
 
 app.all('*', (req, res) => {
   res.status(404);
