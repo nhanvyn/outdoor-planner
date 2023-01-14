@@ -1,0 +1,13 @@
+.container {
+  background-color: coral;
+}
+
+.col {
+  border: 1px solid rgba(6, 6, 6, 0.3);
+  /* display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  align-content: stretch; */
+}

@@ -1,14 +1,20 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css'
 
-import { Button } from "react-bootstrap";
-import Weather from "./comps/Weather";
 
+import Weather from "./comps/Weather";
+import Layout from "./comps/Layout";
+import ActivityForm from "./comps/ActivityForm";
 function App() {
   return (
     <div className="App">
-      <Weather/>
-      <Button>Test Button</Button>
+      <Layout>
+        <Weather/>
+        
+        <ActivityForm /> 
+        
+       
+      </Layout>
     </div>
   );
 }
