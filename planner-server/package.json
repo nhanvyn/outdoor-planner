@@ -1,0 +1,35 @@
+{
+  "name": "outdoor-planner",
+  "version": "1.0.0",
+  "description": "Description: Outdoor planner",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server",
+    "dev": "nodemon server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NhVNgn/outdoor-planner.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NhVNgn/outdoor-planner/issues"
+  },
+  "homepage": "https://github.com/NhVNgn/outdoor-planner#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "dependencies": {
+    "axios": "^1.2.2",
+    "bcrypt": "^5.1.0",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "mongoose": "^6.8.3",
+    "mongoose-sequence": "^5.3.1"
+  }
+}
