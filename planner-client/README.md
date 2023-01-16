@@ -1,3 +1,6 @@
+<h1>Outdoor planner app</h1>
+<p>website for checking weather ahead of time when planning your outdoor activity</p>
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

@@ -4,16 +4,16 @@ import "./Weather.css"
 
 
 const Weather = () => {
-  
-  
+
+
 
   useEffect(() => {
-    const key = 'dad0630945bf043388ae96ea52c7842a'
+    const key = process.env.REACT_APP_API_KEY
     const city = 'New York'
     // const response = await fetch(`/https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`);
     // console.log("Response = ", response)
     const fetchData = async () => {
-      await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`).then(res => res.json()).then(data => {console.log(data)})
+      await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`).then(res => res.json()).then(data => { console.log(data) })
     }
 
     fetchData().catch(console.error)
