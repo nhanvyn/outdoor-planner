@@ -7,9 +7,9 @@ import {
   Link
 } from "react-router-dom";
 
-import Weather from "./comps/Weather";
+
 import Layout from "./comps/Layout";
-import ActivityForm from "./comps/ActivityForm";
+
 import Navigation from "./comps/Navigation";
 import ActivityList from "./comps/ActivityList";
 import { Container } from "react-bootstrap";

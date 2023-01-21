@@ -6,17 +6,28 @@ import { useState, useEffect } from "react";
 
 const Layout = () => {
 
-  let today = new Date().toISOString().slice(0, 10)
+  let today_date_obj = new Date();
+  let today = today_date_obj.toISOString().slice(0, 10)
+  let next5Days_obj = new Date();
+  next5Days_obj.setDate(today_date_obj.getDate() + 5);
+  let next5Days = next5Days_obj.toISOString().slice(0, 10)
+
+  let time = today_date_obj.toLocaleString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+
 
   const [data, setData] = useState(null);
 
-  const [city, setCity] = useState("New York");
+  const [city, setCity] = useState("Vancouver");
   const [date, setDate] = useState(today);
 
   const [cityInput, setCityInput] = useState("");
-  const [dateInput, setDateInput] = useState("2023-01-16");
+  const [dateInput, setDateInput] = useState(today);
 
-
+  const [topic, setTopic] = useState("city-lanscape")
 
 
 
@@ -33,6 +44,7 @@ const Layout = () => {
           return res.json();
         }).then(res => {
           setData(res);
+          setTopic(res.weather[0].main)
           // console.log(res);
         }).catch(console.error)
 
@@ -55,7 +67,7 @@ const Layout = () => {
             if (object.dt_txt.includes(date) && object.dt_txt.includes("12:00:00")) {
               console.log("check future date =", object);
               setData(object);
-
+              setTopic(object.weather[0].main)
             }
           })
 
@@ -87,7 +99,7 @@ const Layout = () => {
 
 
   const handleSubmit = (event) => {
-    event.preventDefault();
+    event.preventDefault(); // help to prevent the page from refreshing after hutting submit
     setCity(cityInput);
     setDate(dateInput);
 
@@ -102,12 +114,12 @@ const Layout = () => {
 
         <div className="col">
           <div className="card bg-dark text-white">
-            <img className="card-img" src="https://source.unsplash.com/random/600x600/?city-landscape" alt="Card image" />
+            <img className="card-img" src={`https://source.unsplash.com/random/600x600/?${topic}`} alt="Card image" />
             <div className="card-img-overlay">
               <div className="bg-dark bg-opacity-50 text-center py-3">
                 <h5 className="card-title">{city}</h5>
-                <p className="card-text lead">Sunday, 19th, 2023</p>
-                <p className="card-text">Updated at </p>
+                <p className="card-text lead">{date}</p>
+                <p className="card-text">Updated at {time} </p>
                 {/* <i className="fas fa-cloud fa-4x" /> */}
                 <h1 className="fw-bolder ">{(data !== null && 'main' in data) ? (data.main.temp - 273.15).toFixed(2) : 30.4} &deg;C</h1>
                 <p className="fw-bolder mb-0 lead">{(data !== null && 'weather' in data) ? data.weather[0].main : 'No Data'}</p>
@@ -139,8 +151,8 @@ const Layout = () => {
 
               <Form.Control
                 type="Date"
-                min="2023-01-14"
-                max="2023-01-20"
+                min={today}
+                max={next5Days}
                 value={dateInput}
                 onChange={(e) => setDateInput(e.target.value)}
 
@@ -153,7 +165,7 @@ const Layout = () => {
               </Button>
 
               <Button className='addToPlan'>
-                Add to plan
+                Save
               </Button>
 
             </div>
