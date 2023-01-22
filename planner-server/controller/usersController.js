@@ -1,8 +1,22 @@
+const jwt = require('jsonwebtoken')
 const User = require('../DBmodels/User')
 // const Activity = require('../DBmodels/Activity')
 
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
+
+// @desc  C
+// @route GET users/me
+const myAccount = asyncHandler(async (req, res) => {
+  const { _id, username } = await User.findById(req.user.id)
+  res.status(200).json({
+    id: _id,
+    name: username
+  })
+});
+
+
+
 
 // GET users
 const getUsers = asyncHandler(async (req, res) => {
@@ -20,6 +34,53 @@ const getUsers = asyncHandler(async (req, res) => {
 
 // POST users
 const createUser = asyncHandler(async (req, res) => {
+  return res.status(400).json({
+    message: 'Not implemented'
+  })
+})
+
+
+// PATCH users
+const updateUser = asyncHandler(async (req, res) => {
+  return res.status(400).json({
+    message: 'Not implemented'
+  })
+})
+
+
+// DELETE users
+const deleteUser = asyncHandler(async (req, res) => {
+  return res.status(400).json({
+    message: 'Not implemented'
+  })
+})
+
+
+// @desc  Authenticate a user
+// @route POST users/login
+
+const loginUser = asyncHandler(async (req, res) => {
+  const { username, password } = req.body
+  const user = await User.findOne({ username })
+
+  if (user && (await bcrypt.compare(password, user.password))) {
+    res.json({
+      message: "login successfully",
+      _id: user._id,
+      name: user.username,
+      token: generateToken(user._id)
+    })
+  } else {
+    res.status(400);
+    throw new Error('Invalid credential')
+  }
+
+
+});
+
+// @desc  Create a user
+// @route POST users/register
+const registerUser = asyncHandler(async (req, res) => {
   console.log("req body = ", req.body)
   const { username, password } = req.body
 
@@ -41,29 +102,34 @@ const createUser = asyncHandler(async (req, res) => {
   const userObject = { "username": username, "password": hashedPassword };
   const user = await User.create(userObject)
   if (user) {
-    res.status(201).json({ message: "new user created" })
+    res.status(201).json({
+      message: "new user created",
+      _id: user._id,
+      name: User.username,
+      token: generateToken(user._id)
+    })
+  } else {
+    res.status(400);
+    throw new Error('Invalid user information')
   }
-})
+
+});
 
 
-// PATCH users
-const updateUser = asyncHandler(async (req, res) => {
-  return res.status(400).json({
-    message: 'Not implemented'
-  })
-})
+// generate JWT
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_KEY)
+}
 
 
-// DELETE users
-const deleteUser = asyncHandler(async (req, res) => {
-  return res.status(400).json({
-    message: 'Not implemented'
-  })
-})
 
 module.exports = {
   getUsers,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  loginUser,
+  registerUser,
+  myAccount
+
 }
