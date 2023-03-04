@@ -8,11 +8,7 @@ const bcrypt = require('bcrypt')
 // @desc  C
 // @route GET users/me
 const myAccount = asyncHandler(async (req, res) => {
-  const { _id, username } = await User.findById(req.user.id)
-  res.status(200).json({
-    id: _id,
-    name: username
-  })
+  res.status(200).json(req.user)
 });
 
 

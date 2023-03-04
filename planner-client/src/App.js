@@ -8,8 +8,9 @@ import {
 } from "react-router-dom";
 
 
-import Layout from "./comps/Layout";
-
+import Layout from "./pages/Layout.js";
+import Login from "./pages/Login.js";
+import Register from "./pages/Register.js";
 import Navigation from "./comps/Navigation";
 import ActivityList from "./comps/ActivityList";
 import { Container } from "react-bootstrap";
@@ -17,7 +18,7 @@ import { useState } from "react";
 
 function App() {
 
-  
+
 
   return (
     <BrowserRouter>
@@ -26,7 +27,8 @@ function App() {
         <Navigation />
 
         <Routes>
-          <Route path="/" element={<Layout/>} />
+
+          <Route path="/" element={<Layout />} />
 
           <Route path="/Activities" element={<ActivityList />} />
 
@@ -36,9 +38,11 @@ function App() {
             <Container>
               <p>Contact me at: abc@example.ca </p>
             </Container>
-            
+
           } />
 
+          <Route path="/Login" element={<Login />} />
+          <Route path="/Register" element={<Register />} />
 
         </Routes>
 
