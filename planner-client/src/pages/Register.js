@@ -3,7 +3,11 @@ import { Container } from "react-bootstrap";
 import "./Register.css"
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify'
+import { register, reset } from "../features/auth/authSlice";
 
 const Register = () => {
 
@@ -12,13 +16,22 @@ const Register = () => {
     password1: '',
     password2: '',
   })
-
-
   const { name, password1, password2 } = formData
 
 
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
 
-
+  useEffect(() => {
+    if (isError) {
+      toast.error(message)
+    }
+    if (isSuccess || user) {
+      navigate('/')
+    }
+    dispatch(reset())
+  }, [user, isError, isSuccess, message, navigate, dispatch])
 
 
   const onChange = (e) => {
@@ -32,7 +45,15 @@ const Register = () => {
 
   const onSubmit = (e) => {
     e.preventDefault()
-
+    if (password1 !== password2) {
+      toast.error('Passwords do not match')
+    } else {
+      const userData = {
+        "username": name,
+        "password": password1,
+      }
+      dispatch(register(userData))
+    }
 
   }
 

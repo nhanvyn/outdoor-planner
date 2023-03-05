@@ -82,7 +82,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (!username || !password) {
     return res.status(400).json({
-      message: 'Either username or password was missing in request'
+      message: 'HEY, Either username or password was missing in request'
     })
   }
 

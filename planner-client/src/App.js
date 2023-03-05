@@ -1,5 +1,6 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css'
+import { ToastContainer } from 'react-toastify';
 import {
   BrowserRouter,
   Routes,
@@ -15,41 +16,45 @@ import Navigation from "./comps/Navigation";
 import ActivityList from "./comps/ActivityList";
 import { Container } from "react-bootstrap";
 import { useState } from "react";
-
+                                                  
 function App() {
 
 
 
   return (
-    <BrowserRouter>
+    <>
+      <BrowserRouter>
 
-      <div className="App">
-        <Navigation />
+        <div className="App">
+          <Navigation />
 
-        <Routes>
+          <Routes>
 
-          <Route path="/" element={<Layout />} />
+            <Route path="/" element={<Layout />} />
 
-          <Route path="/Activities" element={<ActivityList />} />
-
-
-          <Route path="/Contact" element={
-
-            <Container>
-              <p>Contact me at: abc@example.ca </p>
-            </Container>
-
-          } />
-
-          <Route path="/Login" element={<Login />} />
-          <Route path="/Register" element={<Register />} />
-
-        </Routes>
+            <Route path="/Activities" element={<ActivityList />} />
 
 
+            <Route path="/Contact" element={
 
-      </div>
-    </BrowserRouter>
+              <Container>
+                <p>Contact me at: abc@example.ca </p>
+              </Container>
+
+            } />
+
+            <Route path="/Login" element={<Login />} />
+            <Route path="/Register" element={<Register />} />
+
+          </Routes>
+
+
+
+        </div>
+      </BrowserRouter>
+      <ToastContainer />
+    </>
+
 
   );
 }
