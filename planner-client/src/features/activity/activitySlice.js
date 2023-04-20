@@ -32,6 +32,11 @@ export const activitySlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(addActivity.pending, (state) => {
       state.isLoading = true
+    }).addCase(addActivity.fulfilled, (state, action) => {
+      state.isLoading = false
+      state.isSuccess = true
+      state.message = "Added " + action.payload.name;
+      state.activities.push(action.payload)
     })
   }
 })

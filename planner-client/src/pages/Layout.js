@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { fetchData, fetchFutureData } from "../utils/weather";
 import Modal from 'react-bootstrap/Modal';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
-import { addActivity } from "../features/activity/activitySlice";
+import { addActivity, reset } from "../features/activity/activitySlice";
 import { useSelector, useDispatch } from 'react-redux'
 
 const Layout = () => {
@@ -50,12 +50,21 @@ const Layout = () => {
 
 
   const { user } = useSelector((state) => state.auth)
-  const { activities, message } = useSelector((state) => state.act)
+  const { activities, message, isError, isLoading } = useSelector((state) => state.act)
   const dispatch = useDispatch()
 
-
-  const getFutureData = async () => {
-    await fetchFutureData(city, key).then((res) => {
+  const formData = {
+    user: user,
+    name: nameInput,
+    note: noteInput,
+    date: dateInput,
+    from: fromInput,
+    to: toInput,
+    city: cityInput,
+    weather: weather
+  }
+  const getFutureData = async (cityArg) => {
+    await fetchFutureData(cityArg, key).then((res) => {
       if (res) {
         res.list.map((object, index) => {
           if (object.dt_txt.includes(date) && object.dt_txt.includes("12:00:00")) {
@@ -68,11 +77,12 @@ const Layout = () => {
       }
     }).catch((error) => {
       console.log(error)
-      showErrorToast(error + "City Not Found: " + city)
+      showErrorToast(error + "City Not Found: " + cityArg)
+      console.log("formData error: ", formData)
     })
   }
-  const getTodayData = async () => {
-    await fetchData(city, key).then((res) => {
+  const getTodayData = async (cityArg) => {
+    await fetchData(cityArg, key).then((res) => {
       if (res) {
         setData(res);
         setTopic(res.weather[0].main)
@@ -80,69 +90,32 @@ const Layout = () => {
       }
     }).catch((error) => {
       console.log(error)
-      showErrorToast(error + " City Not Found: " + city)
+      showErrorToast(error + " City Not Found: " + cityArg)
+      console.log("formData error:", formData)
     });
   }
 
 
   const updateWeather = () => {
+    console.log("update weather called")
     const selectedDate = new Date(date).getTime();
     const todayDate = new Date(today).getTime();
     if (selectedDate > todayDate) {
 
-      getFutureData();
+      getFutureData(city);
     }
     else {
 
-      getTodayData()
+      getTodayData(city)
     }
   }
-
-
-  const createActivity = async () => {
-    const selectedDate = new Date(date).getTime();
-    const todayDate = new Date(today).getTime();
-    if (selectedDate > todayDate) {
-
-      await getFutureData().then(() => {
-        dispatch(addActivity({
-          user: user,
-          name: nameInput,
-          note: noteInput,
-          date: dateInput,
-          from: fromInput,
-          to: toInput,
-          city: cityInput,
-          weather: weather
-        }))
-      });
-    }
-    else {
-    
-     
-      await getTodayData().then(() => {
-        
-        const formData = {
-          user: user,
-          name: nameInput,
-          note: noteInput,
-          date: dateInput,
-          from: fromInput,
-          to: toInput,
-          city: cityInput,
-          weather: weather
-        }
-        console.log("dispatch today data:", formData)
-        dispatch(addActivity(formData))
-      });
-    }
-  }
-
 
 
   useEffect(() => {
-
-    updateWeather()
+    if (!isLoading) {
+      // when createActivity is in process, no need to call updateWeather()
+      updateWeather()
+    }
   }, [city, date])
 
   const handleCheckWeather = (event) => {
@@ -152,6 +125,43 @@ const Layout = () => {
     setName(nameInput)
 
   }
+
+
+  useEffect(() => {
+    console.log("activities: ", activities)
+    if (isError) {
+      showErrorToast(message)
+    }
+    else if (activities && message) {
+      showSuccessToast("createActivity: " + message)
+    }
+    dispatch(reset())
+  }, [activities, message])
+
+  const createActivity = async () => {
+    const selectedDate = new Date(date).getTime();
+    const todayDate = new Date(today).getTime();
+    console.log("createActivity is called")
+    if (selectedDate > todayDate) {
+
+      await getFutureData(cityInput).then(() => {
+        dispatch(addActivity(formData))
+      });
+    }
+    else {
+      await getTodayData(cityInput).then(() => {
+        dispatch(addActivity(formData))
+      });
+    }
+    setCity(cityInput);
+    setDate(dateInput);
+    setName(nameInput);
+    setNote(noteInput);
+    setFrom(fromInput);
+    setTo(toInput);
+
+  }
+
 
   // Modal
   const [show, setShow] = useState(false);
@@ -163,16 +173,9 @@ const Layout = () => {
   };
   const handleSubmit = (event) => {
     event.preventDefault();
-    setCity(cityInput);
-    setDate(dateInput);
-    setName(nameInput);
-    setNote(noteInput);
-    setFrom(fromInput);
-    setTo(toInput);
 
     createActivity()
     handleClose();
-    console.log(fromInput, " and ", toInput)
   }
 
   const handleShow = () => setShow(true);
