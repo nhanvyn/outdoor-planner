@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const User = require('../DBmodels/User')
-// const Activity = require('../DBmodels/Activity')
+
 
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
@@ -10,9 +10,6 @@ const bcrypt = require('bcrypt')
 const myAccount = asyncHandler(async (req, res) => {
   res.status(200).json(req.user)
 });
-
-
-
 
 // GET users
 const getUsers = asyncHandler(async (req, res) => {
@@ -35,14 +32,12 @@ const createUser = asyncHandler(async (req, res) => {
   })
 })
 
-
 // PATCH users
 const updateUser = asyncHandler(async (req, res) => {
   return res.status(400).json({
     message: 'Not implemented'
   })
 })
-
 
 // DELETE users
 const deleteUser = asyncHandler(async (req, res) => {
@@ -51,27 +46,27 @@ const deleteUser = asyncHandler(async (req, res) => {
   })
 })
 
-
 // @desc  Authenticate a user
 // @route POST users/login
 
 const loginUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body
+
   const user = await User.findOne({ username })
 
   if (user && (await bcrypt.compare(password, user.password))) {
-    res.json({
-      message: "login successfully",
+    res.status(200).json({
+      message: "Logged in successfully",
       _id: user._id,
       name: user.username,
       token: generateToken(user._id)
     })
   } else {
-    res.status(400);
+    res.status(404).json({
+      message: "Invalid Credentials"
+    })
     throw new Error('Invalid credential')
   }
-
-
 });
 
 // @desc  Create a user
@@ -82,7 +77,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (!username || !password) {
     return res.status(400).json({
-      message: 'HEY, Either username or password was missing in request'
+      message: 'Either username or password was missing in request'
     })
   }
 
@@ -93,13 +88,13 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // hash password
-  const saltRounds = 10;
+  const saltRounds = await bcrypt.genSalt(10)
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   const userObject = { "username": username, "password": hashedPassword };
   const user = await User.create(userObject)
   if (user) {
     res.status(201).json({
-      message: "new user created",
+      message: "Your account is created",
       _id: user._id,
       name: User.username,
       token: generateToken(user._id)
@@ -111,13 +106,10 @@ const registerUser = asyncHandler(async (req, res) => {
 
 });
 
-
 // generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_KEY)
 }
-
-
 
 module.exports = {
   getUsers,

@@ -1,7 +1,13 @@
 {
   "name": "planner-client",
   "version": "0.1.0",
-  "proxy": "http://localhost:3500/",
+  "options": {
+    "allowedHosts": [
+      "localhost",
+      ".localhost"
+    ],
+    "proxy": "http://localhost:3500/"
+  },
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.1",
@@ -21,6 +27,7 @@
     "react-scripts": "5.0.1",
     "react-toastify": "^9.1.1",
     "sort-by": "^1.2.0",
+    "weather-icons-react": "^1.2.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

@@ -13,10 +13,10 @@ import Layout from "./pages/Layout.js";
 import Login from "./pages/Login.js";
 import Register from "./pages/Register.js";
 import Navigation from "./comps/Navigation";
-import ActivityList from "./comps/ActivityList";
+import Activity from "./comps/Activity.js";
 import { Container } from "react-bootstrap";
 import { useState } from "react";
-                                                  
+
 function App() {
 
 
@@ -32,7 +32,7 @@ function App() {
 
             <Route path="/" element={<Layout />} />
 
-            <Route path="/Activities" element={<ActivityList />} />
+            <Route path="/Activities" element={<Activity />} />
 
 
             <Route path="/Contact" element={

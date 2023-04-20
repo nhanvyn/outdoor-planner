@@ -6,10 +6,24 @@ import {
   Link
 } from "react-router-dom"
 import "./Navigation.css"
-import NavDropdown from 'react-bootstrap/NavDropdown';
 import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout, reset } from "../features/auth/authSlice";
+import { useNavigate } from "react-router-dom";
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 const Navigation = () => {
-  const [user, setUser] = useState(null)
+
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
+
+
+  const onLogout = () => {
+    dispatch(logout())
+    dispatch(reset())
+    showSuccessToast("Logged out successfully")
+    navigate('/')
+  }
 
 
   return (
@@ -39,13 +53,12 @@ const Navigation = () => {
               <Navbar.Toggle aria-controls="responsive-navbar-nav" />
               <Navbar.Collapse id="responsive-navbar-nav">
                 <Nav className="me-auto">
-                  <Nav.Link as={Link} to="/">Home</Nav.Link>
-                  <Nav.Link as={Link} to="/Contact">Contact</Nav.Link>
-                  <Nav.Link as={Link} to="/Activities">Your Activities</Nav.Link>
                 </Nav>
                 <Nav>
-                  <Nav.Link href="#people">People</Nav.Link>
-                  <Nav.Link eventKey={2} href="#Sign Out">Sign Out</Nav.Link>
+
+                  <Nav.Link as={Link} to="/Activities">Activities</Nav.Link>
+                  <Nav.Link onClick={onLogout}>Logout</Nav.Link>
+                  <Nav.Link>Welcome, {user.name}</Nav.Link>
                 </Nav>
               </Navbar.Collapse>
             </>

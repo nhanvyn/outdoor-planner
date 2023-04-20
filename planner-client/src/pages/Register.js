@@ -6,7 +6,7 @@ import Form from 'react-bootstrap/Form';
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from "react-router-dom";
-import { toast } from 'react-toastify'
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { register, reset } from "../features/auth/authSlice";
 
 const Register = () => {
@@ -25,9 +25,10 @@ const Register = () => {
 
   useEffect(() => {
     if (isError) {
-      toast.error(message)
+      showErrorToast(message)
     }
-    if (isSuccess || user) {
+    if (user && message) {
+      showSuccessToast(message)
       navigate('/')
     }
     dispatch(reset())
@@ -46,7 +47,7 @@ const Register = () => {
   const onSubmit = (e) => {
     e.preventDefault()
     if (password1 !== password2) {
-      toast.error('Passwords do not match')
+      showErrorToast("password does not match")
     } else {
       const userData = {
         "username": name,
@@ -60,7 +61,7 @@ const Register = () => {
   return (
 
     <div className='register'>
-      <Container className="w-50">
+      <Container className="w-25" style={{ border: "solid rgb(197, 184, 184) 0.5px " }} >
         <Form onSubmit={onSubmit}>
           <h1 className='text-center'>REGISTER</h1>
           <Form.Group className="mb-3" controlId="formBasicEmail">

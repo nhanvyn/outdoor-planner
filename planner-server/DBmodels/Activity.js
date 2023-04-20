@@ -1,33 +1,48 @@
 const mongoose = require('mongoose')
-const autoIncrement = require('mongoose-sequence')(mongoose);
 
 
 const activitySchema = new mongoose.Schema({
-  user: {
+  host: {
     type: mongoose.Schema.Types.ObjectId,
-    require: true,
-    ref: 'User'
+    required: true,
+    ref: 'User',
   },
-
   name: {
     type: String,
     require: true
   },
-  date: {
-    type: Date,
-    required: true
+  note: {
+    type: String,
+    require: true
   },
-
+  date: {
+    type: String,
+    require: true
+  },
+  from: {
+    type: String,
+    require: true
+  },
+  to: {
+    type: String,
+    require: true
+  },
+  city: {
+    type: String,
+    require: true
+  },
+  weather: {
+    type: String,
+    require: true
+  },
 },
   {
-    timestamps: true // automatically added createdAt and updatedAt fields
-  })
+    timestamps: true,
+  }
 
-noteSchema.plugin(AutoIncrement, {
-  inc_field: 'ticket',
-  id: 'ticketNums',
-  start_seq: 500
-})
+);
+
+
 
 
 module.exports = mongoose.model('Activity', activitySchema)

@@ -3,15 +3,33 @@ import { Container } from "react-bootstrap";
 import "./Login.css"
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import { useState } from "react";
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from "react-router-dom";
+import { login, reset } from "../features/auth/authSlice";
+import { useEffect, useState } from "react";
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 const Login = () => {
 
   const [formData, setFormData] = useState({
-    name: '',
-    password1: '',
+    username: '',
+    password: '',
 
   })
 
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { user, isLoading, isError, message } = useSelector((state) => state.auth)
+  useEffect(() => {
+    if (isError) {
+      showErrorToast(message)
+    }
+    if (user) {
+      showSuccessToast(message)
+      navigate('/')
+    }
+    dispatch(reset())
+  }, [user, isError, navigate, dispatch])
 
   const onChange = (e) => {
 
@@ -20,27 +38,28 @@ const Login = () => {
       return newFormData
     })
     console.log(formData)
-    console.log(`Name: ${e.target.name}, Value: ${e.target.value}, Type: ${e.target.type}, Placeholder: ${e.target.placeholder}`)
+    console.log(`Name: ${e.target.value}`)
   }
+
 
 
   const onSubmit = (e) => {
     e.preventDefault()
-
+    dispatch(login(formData))
 
   }
   return (
 
     <div className='login'>
-      <Container className="w-50">
+      <Container className="w-25" style={{ border: "solid rgb(197, 184, 184) 0.5px " }}>
         <Form onSubmit={onSubmit}>
           <h1 className='text-center'>LOGIN</h1>
           <Form.Group className="mb-3" controlId="formBasicEmail">
             <Form.Control
               type="text"
               placeholder="Enter your Username"
-              name='name'
-              value={formData.name}
+              name='username'
+              value={formData.username}
               onChange={onChange}
               required
             />
@@ -51,8 +70,8 @@ const Login = () => {
             <Form.Control
               type="password"
               placeholder="Enter your password"
-              name='password1'
-              value={formData.password1}
+              name='password'
+              value={formData.password}
               onChange={onChange}
               required
             />
