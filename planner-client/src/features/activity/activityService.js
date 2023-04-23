@@ -2,16 +2,56 @@ import axios from 'axios'
 
 const API_URL = 'http://localhost:3500/activity'
 
-const addActivity  = async (activity) => {
-  const response = await axios.post(API_URL + "/addActivity", activity)
+const addActivity = async (activity, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+  const response = await axios.post(API_URL + "/", activity, config)
+  return response.data
+}
+
+const getActivities = async (token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+  const response = await axios.get(API_URL + "/", config)
+  return response.data
+}
+
+
+const deleteActivity = async (activity_id, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+  const response = await axios.delete(API_URL + "/" + activity_id, config)
+  return response.data
+}
+
+const updateActivity = async (activity_id, formData, token) => {
+ 
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+
+  const response = await axios.put(API_URL + "/" + activity_id, formData, config)
   return response.data
 }
 
 
 
-
 const authService = {
-  addActivity
+  addActivity,
+  getActivities,
+  deleteActivity,
+  updateActivity
 }
 
 export default authService

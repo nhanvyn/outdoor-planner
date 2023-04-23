@@ -13,7 +13,7 @@ import Layout from "./pages/Layout.js";
 import Login from "./pages/Login.js";
 import Register from "./pages/Register.js";
 import Navigation from "./comps/Navigation";
-import Activity from "./comps/Activity.js";
+import Activity from "./pages/Activity.js";
 import { Container } from "react-bootstrap";
 import { useState } from "react";
 

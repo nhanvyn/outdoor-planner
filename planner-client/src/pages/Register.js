@@ -1,6 +1,5 @@
 
 import { Container } from "react-bootstrap";
-import "./Register.css"
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useEffect, useState } from "react";

@@ -1,12 +1,13 @@
 import "./Layout.css"
-import { Children } from "react";
+
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useState, useEffect } from "react";
-import { fetchData, fetchFutureData } from "../utils/weather";
+import { fetchData, fetchFutureData, getWeatherWidget } from "../utils/weather";
 import Modal from 'react-bootstrap/Modal';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { addActivity, reset } from "../features/activity/activitySlice";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
 
 const Layout = () => {
@@ -50,9 +51,9 @@ const Layout = () => {
 
 
   const { user } = useSelector((state) => state.auth)
-  const { activities, message, isError, isLoading } = useSelector((state) => state.act)
+  const { created_activities, message, isError, isLoading, isSuccess } = useSelector((state) => state.act)
   const dispatch = useDispatch()
-
+  const navigate = useNavigate()
   const formData = {
     user: user,
     name: nameInput,
@@ -63,30 +64,27 @@ const Layout = () => {
     city: cityInput,
     weather: weather
   }
-  const getFutureData = async (cityArg) => {
-    await fetchFutureData(cityArg, key).then((res) => {
-      if (res) {
-        res.list.map((object, index) => {
-          if (object.dt_txt.includes(date) && object.dt_txt.includes("12:00:00")) {
-            //console.log("check future date =", object);
-            setData(object);
-            setTopic(object.weather[0].main)
-            setWeather(object.weather[0].main)
-          }
-        })
-      }
-    }).catch((error) => {
-      console.log(error)
-      showErrorToast(error + "City Not Found: " + cityArg)
-      console.log("formData error: ", formData)
-    })
-  }
-  const getTodayData = async (cityArg) => {
+  
+
+  // note: update and createAct both call getFuture data -> need to seperate
+
+  
+  const getTodayData = async (cityArg, cmd) => {
+    console.log("get today data is called")
     await fetchData(cityArg, key).then((res) => {
       if (res) {
         setData(res);
         setTopic(res.weather[0].main)
         setWeather(res.weather[0].main)
+        let updated_weather = res.weather[0].main
+        if (cmd == "create"){
+          const updatedFormData = {
+            ...formData,
+            weather: updated_weather
+          }
+          console.log("dispatch formData: ", updatedFormData)
+          dispatch(addActivity(updatedFormData))
+        }
       }
     }).catch((error) => {
       console.log(error)
@@ -96,17 +94,51 @@ const Layout = () => {
   }
 
 
+  const getFutureData = async (cityArg, dateArg, cmd) => {
+    await fetchFutureData(cityArg, key).then((res) => {
+      console.log("get future called")
+      if (res) {
+        let updated_weather = "unknown"
+        let weather_obj; 
+        res.list.forEach((object) => {
+          if (object.dt_txt.includes(dateArg) && object.dt_txt.includes("12:00:00")) {
+            updated_weather = object.weather[0].main;
+            weather_obj = object
+          }
+       
+        });
+        setData(weather_obj);
+        setTopic(weather_obj.weather[0].main)
+        setWeather(weather_obj.weather[0].main)
+        if (cmd == "create"){
+          const updatedFormData = {
+            ...formData,
+            weather: updated_weather
+          }
+          console.log("dispatch formData: ", updatedFormData)
+          dispatch(addActivity(updatedFormData))
+        }
+      }
+    }).catch((error) => {
+      console.log(error)
+      showErrorToast(error + "City Not Found: " + cityArg)
+      console.log("formData error: ", formData)
+    })
+  }
+
+
+
   const updateWeather = () => {
     console.log("update weather called")
     const selectedDate = new Date(date).getTime();
     const todayDate = new Date(today).getTime();
     if (selectedDate > todayDate) {
 
-      getFutureData(city);
+      getFutureData(city, date, "update");
     }
     else {
 
-      getTodayData(city)
+      getTodayData(city, "update")
     }
   }
 
@@ -128,30 +160,26 @@ const Layout = () => {
 
 
   useEffect(() => {
-    console.log("activities: ", activities)
+    //console.log("created_activities: ", created_activities)
     if (isError) {
       showErrorToast(message)
     }
-    else if (activities && message) {
+    else if (created_activities.length > 0 && message) {
       showSuccessToast("createActivity: " + message)
     }
     dispatch(reset())
-  }, [activities, message])
+  }, [created_activities, message])
 
   const createActivity = async () => {
-    const selectedDate = new Date(date).getTime();
+    const selectedDate = new Date(dateInput).getTime();
     const todayDate = new Date(today).getTime();
     console.log("createActivity is called")
     if (selectedDate > todayDate) {
 
-      await getFutureData(cityInput).then(() => {
-        dispatch(addActivity(formData))
-      });
+      await getFutureData(cityInput, dateInput, "create")
     }
     else {
-      await getTodayData(cityInput).then(() => {
-        dispatch(addActivity(formData))
-      });
+      await getTodayData(cityInput, "create")
     }
     setCity(cityInput);
     setDate(dateInput);
@@ -178,7 +206,13 @@ const Layout = () => {
     handleClose();
   }
 
-  const handleShow = () => setShow(true);
+  const handleShow = () => {
+    if (user){
+      setShow(true)
+    } else {
+      navigate('/login')
+    }
+  };
   const nextPage = () => setActivePage(activePage + 1);
   const previousPage = () => setActivePage(activePage - 1);
 
@@ -200,7 +234,16 @@ const Layout = () => {
                 <p className="card-text responsive-text">Updated at {today_time} </p>
                 {/* <i className="fas fa-cloud fa-4x" /> */}
                 <h1 className="fw-bolder responsive-text">{(data !== null && 'main' in data) ? (data.main.temp - 273.15).toFixed(2) : 30.4} &deg;C</h1>
-                <p className="fw-bolder mb-0 lead responsive-text">{(data !== null && 'weather' in data) ? data.weather[0].main : 'No Data'}</p>
+                <div className="fw-bolder mb-0 lead responsive-text">
+                  {data !== null && 'weather' in data ? (
+                    <div>
+                      {getWeatherWidget(data.weather[0].main, 25, "#fff")}
+                      {data.weather[0].main}
+                    </div>
+                  ) : (
+                    'No Data'
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -371,7 +414,7 @@ const Layout = () => {
 
             ) : (
               <Form>
-                <p>Page 2 content</p>
+                <p>Premium features</p>
               </Form>
             )}
           </Modal.Body>
