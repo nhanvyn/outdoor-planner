@@ -32,7 +32,6 @@ const corsOptions = {
   credentials: true
 }
 const PORT = process.env.PORT || 3500;
-const KEY = process.env.weather_api_key;
 app.use(cors(corsOptions))
 app.use(express.json())
 app.use(cookieParser())
