@@ -5,7 +5,7 @@ const mongoose = require('mongoose')
 const connectToDB = require('./config/dbConfig.js')
 const cookieParser = require('cookie-parser')
 
-const whitelist = ["http://localhost:3000"]
+const whitelist = ["http://localhost:3000", "https://outplanner-frontend.onrender.com"]
 
 
 const app = express();
