@@ -1,6 +1,10 @@
 import axios from 'axios'
 
-const API_URL = 'http://localhost:3500/activity'
+const mode = process.env.MODE
+let API_URL = 'http://localhost:3500/activity'
+if (mode == "production") {
+  API_URL = "https://outplanner.onrender.com/activity"
+}
 
 const addActivity = async (activity, token) => {
   const config = {
@@ -34,7 +38,7 @@ const deleteActivity = async (activity_id, token) => {
 }
 
 const updateActivity = async (activity_id, formData, token) => {
- 
+
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,

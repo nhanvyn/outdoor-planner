@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-const API_URL = 'http://localhost:3500/users'
+
+const mode = process.env.MODE
+let API_URL = 'http://localhost:3500/users'
+if (mode == "production"){
+  API_URL = "https://outplanner.onrender.com"
+}
 
 const register = async (userData) => {
   console.log("user data is: " + JSON.stringify(userData))
