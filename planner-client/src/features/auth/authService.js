@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const mode = process.env.MODE
 let API_URL = 'http://localhost:3500/users'
-if (mode == "production"){
+if (mode === "production"){
   API_URL = "https://outplanner.onrender.com"
 }
 
@@ -30,10 +30,22 @@ const logout = async () => {
   localStorage.removeItem('user')
 }
 
+const getGuests = async(token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+  const response = await axios.get(API_URL + "/", config)
+  return response.data
+} 
+
+
 const authService = {
   register,
   login, 
-  logout
+  logout,
+  getGuests,
 }
 
 export default authService

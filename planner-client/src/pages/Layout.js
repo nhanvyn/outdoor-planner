@@ -1,14 +1,20 @@
 import "./Layout.css"
 
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+
+import { InputGroup, Form, Button } from 'react-bootstrap';
 import { useState, useEffect } from "react";
 import { fetchData, fetchFutureData, getWeatherWidget } from "../utils/weather";
 import Modal from 'react-bootstrap/Modal';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { addActivity, reset } from "../features/activity/activitySlice";
+import { addInvite, reset as resetInvite } from "../features/invite/inviteSlice";
+import { getGuests } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
+import { BiSearch } from 'react-icons/bi';
+import { HiUserCircle } from 'react-icons/hi'
+
+
 
 const Layout = () => {
 
@@ -50,7 +56,12 @@ const Layout = () => {
 
 
 
-  const { user } = useSelector((state) => state.auth)
+
+
+
+
+  const { user, guests } = useSelector((state) => state.auth)
+
   const { created_activities, message, isError, isLoading, isSuccess } = useSelector((state) => state.act)
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -64,11 +75,10 @@ const Layout = () => {
     city: cityInput,
     weather: weather
   }
-  
+
 
   // note: update and createAct both call getFuture data -> need to seperate
 
-  
   const getTodayData = async (cityArg, cmd) => {
     console.log("get today data is called")
     await fetchData(cityArg, key).then((res) => {
@@ -77,7 +87,7 @@ const Layout = () => {
         setTopic(res.weather[0].main)
         setWeather(res.weather[0].main)
         let updated_weather = res.weather[0].main
-        if (cmd == "create"){
+        if (cmd == "create") {
           const updatedFormData = {
             ...formData,
             weather: updated_weather
@@ -93,24 +103,23 @@ const Layout = () => {
     });
   }
 
-
   const getFutureData = async (cityArg, dateArg, cmd) => {
     await fetchFutureData(cityArg, key).then((res) => {
       console.log("get future called")
       if (res) {
         let updated_weather = "unknown"
-        let weather_obj; 
+        let weather_obj;
         res.list.forEach((object) => {
           if (object.dt_txt.includes(dateArg) && object.dt_txt.includes("12:00:00")) {
             updated_weather = object.weather[0].main;
             weather_obj = object
           }
-       
+
         });
         setData(weather_obj);
         setTopic(weather_obj.weather[0].main)
         setWeather(weather_obj.weather[0].main)
-        if (cmd == "create"){
+        if (cmd == "create") {
           const updatedFormData = {
             ...formData,
             weather: updated_weather
@@ -125,8 +134,6 @@ const Layout = () => {
       console.log("formData error: ", formData)
     })
   }
-
-
 
   const updateWeather = () => {
     console.log("update weather called")
@@ -168,7 +175,7 @@ const Layout = () => {
       showSuccessToast("createActivity: " + message)
     }
     dispatch(reset())
-  }, [created_activities, message])
+  }, [created_activities, message, isError])
 
   const createActivity = async () => {
     const selectedDate = new Date(dateInput).getTime();
@@ -207,7 +214,7 @@ const Layout = () => {
   }
 
   const handleShow = () => {
-    if (user){
+    if (user) {
       setShow(true)
     } else {
       navigate('/login')
@@ -216,14 +223,79 @@ const Layout = () => {
   const nextPage = () => setActivePage(activePage + 1);
   const previousPage = () => setActivePage(activePage - 1);
 
+  // Searching user
+  // const guests = [
+  //   {
+  //     name: "aaaaaaa",
+  //     id: "1"
+  //   },
+  //   {
+  //     name: "aabbbbbb",
+  //     id: "2"
 
+  //   },
+  //   {
+  //     name: "bccccc",
+  //     id: "3"
+
+  //   },
+  //   {
+  //     name: "bbdddddddd",
+  //     id: "4"
+
+  //   },
+  //   {
+  //     name: "aeeeee",
+  //     id: "5"
+
+  //   },
+  //   {
+  //     name: "fffff",
+  //     id: "6"
+
+  //   }
+  // ]
+
+  const [filGuests, setFilGuests] = useState([])
+  const [value, setValue] = useState("")
+  const [invites, setInvites] = useState([])
+  const handleInvite = (guest) => {
+    const guestExists = invites.some((existingGuest) => existingGuest._id === guest._id);
+    if (guestExists) {
+      return;
+    }
+
+    const newInvites = [...invites, guest]
+    setInvites(newInvites)
+  }
+  const onWordTyped = (e) => {
+    setValue(e.target.value)
+  }
+
+  const handleRemove = (guestToRemove) => {
+    const newInvites = invites.filter((guest) => guest !== guestToRemove)
+    setInvites(newInvites)
+  }
+
+  useEffect(() => {
+    if (user) {
+      dispatch(getGuests())
+    }
+  }, [dispatch, user])
+
+  useEffect(() => {
+    console.log("check guest fetching: ", guests)
+  }, [guests])
+
+  useEffect(() => {
+    // filter guest by word 
+    const users = guests.filter((guest) => guest.username.toLowerCase().trim().startsWith(value.toLowerCase().trim()))
+    setFilGuests(users)
+  }, [value, guests])
 
   return (
     <div className="container">
       <div className="row">
-
-
-
         <div className="col">
           <div className="card bg-dark">
             <img className="card-img" src={`https://source.unsplash.com/random/600x600/?${topic}`} alt="Card image" />
@@ -248,8 +320,6 @@ const Layout = () => {
             </div>
           </div>
         </div>
-
-
 
         <div className="col">
           <Form onSubmit={handleCheckWeather} className='mt-4'>
@@ -300,12 +370,6 @@ const Layout = () => {
         </div>
 
 
-
-
-
-
-
-
         <Modal show={show} onHide={handleClose}>
           <Modal.Header>
             {activePage == 1 ? (
@@ -329,10 +393,7 @@ const Layout = () => {
           </Modal.Header>
           <Modal.Body>
             {activePage === 1 ? (
-
               <Form onSubmit={handleSubmit}>
-
-
                 <Form.Group className="mb-3">
                   <Form.Label className="ms-1" style={{ fontSize: '10px', color: '#999999' }}>NAME</Form.Label>
                   <Form.Control
@@ -414,8 +475,60 @@ const Layout = () => {
 
             ) : (
               <Form>
-                <p>Premium features</p>
+
+                <Form.Group>
+
+                  <InputGroup>
+                    <span className="input-group-text bg-white border-end-0"><BiSearch /></span>
+                    <Form.Control
+                      type="search"
+                      className="border-start-0"
+                      placeholder="Search here.."
+                      value={value}
+                      onChange={onWordTyped}
+                    />
+                  </InputGroup>
+                  <ul className="list-group" style={{ maxHeight: " 200px", overflowY: "scroll" }}>
+
+                    {
+                      filGuests.map((guest) => (
+
+                        <li className="list-group-item list-group-item-action d-flex justify-content-between align-items-center" key={guest._id} style={{ cursor: "pointer" }} onClick={() => handleInvite(guest)}>
+                          <div> <HiUserCircle size={24} className="me-2" />
+                            {guest.username}
+                          </div>
+
+                        </li>
+                      ))
+                    }
+
+                  </ul>
+                </Form.Group>
+
+                <Form.Group className="mt-1">
+                  <Form.Label className="ms-1" style={{ fontSize: '10px', color: '#999999' }}>Invite list</Form.Label>
+                  <ul className="list-group" style={{ maxHeight: " 250px", overflowY: "scroll" }}>
+
+                    {
+                      invites.map((guest) => (
+                        <li className="list-group-item  d-flex justify-content-between align-items-center" key={guest._id}>
+                          <div> <HiUserCircle size={24} className="me-2" />
+                            {guest.username}
+                          </div>
+
+                          <Button variant="primary" onClick={() => handleRemove(guest)}>
+                            Remove
+                          </Button>
+                        </li>
+                      ))
+                    }
+
+                  </ul>
+                </Form.Group>
+
+
               </Form>
+
             )}
           </Modal.Body>
         </Modal>

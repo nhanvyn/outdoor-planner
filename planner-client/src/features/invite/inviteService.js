@@ -1,18 +1,18 @@
 import axios from 'axios'
 
 const mode = process.env.MODE
-let API_URL = 'http://localhost:3500/activity'
+let API_URL = 'http://localhost:3500/invite'
 if (mode === "production") {
-  API_URL = "https://outplanner.onrender.com/activity"
+  API_URL = "https://outplanner.onrender.com/invite"
 }
 
-const addActivity = async (activity, token) => {
+const addInvite = async (invite, token) => {
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   }
-  const response = await axios.post(API_URL + "/", activity, config)
+  const response = await axios.post(API_URL + "/", invite, config)
   return response.data
 }
 
@@ -27,17 +27,17 @@ const getActivities = async (token) => {
 }
 
 
-const deleteActivity = async (activity_id, token) => {
+const deleteInvite = async (invite_id, token) => {
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   }
-  const response = await axios.delete(API_URL + "/" + activity_id, config)
+  const response = await axios.delete(API_URL + "/" + invite_id, config)
   return response.data
 }
 
-const updateActivity = async (activity_id, formData, token) => {
+const updateInvite = async (invite_id, formData, token) => {
 
   const config = {
     headers: {
@@ -45,17 +45,17 @@ const updateActivity = async (activity_id, formData, token) => {
     },
   }
 
-  const response = await axios.put(API_URL + "/" + activity_id, formData, config)
+  const response = await axios.put(API_URL + "/" + invite_id, formData, config)
   return response.data
 }
 
 
 
 const authService = {
-  addActivity,
+  addInvite,
   getActivities,
-  deleteActivity,
-  updateActivity
+  deleteInvite,
+  updateInvite
 }
 
 export default authService
