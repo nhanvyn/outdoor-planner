@@ -9,10 +9,11 @@ import { useState, useEffect } from "react";
 import { fetchData, fetchFutureData, getWeatherWidget } from "../utils/weather";
 import Modal from 'react-bootstrap/Modal';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
-import { reset, getActivities, deleteActivity, updateActivity } from "../features/activity/activitySlice";
+import { reset, getActivities, deleteActivity, updateActivity, getActivitiesByInvites } from "../features/activity/activitySlice";
+
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
-
+import { addInvites, getInvites, reset as resetInvite } from "../features/invite/inviteSlice";
 
 
 
@@ -29,24 +30,25 @@ const Activity = () => {
   const key = process.env.REACT_APP_API_KEY
 
   const { user } = useSelector((state) => state.auth)
-  const { fetched_activities, message, isError, isLoading } = useSelector((state) => state.act)
+  const { fetched_activities, invited_activities ,message, isError, isLoading } = useSelector((state) => state.act)
+  const { fetched_invites } = useSelector((state) => state.invite)
+  const [allActivities, setAllActivities] = useState([])
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
   
-
+  // fetching user's activities and invites activity
   useEffect(() => {
     dispatch(getActivities())
+    dispatch(getInvites())
     if (!user) {
       navigate('/login')
     }
     return () => {
-
+      // reset activities state only when unmouted
       dispatch(reset())
-      // console.log("component is unmounted, activities = ", fetched_activities)
     }
   }, [dispatch, isError, navigate, user])
-
 
   useEffect(() => {
     if (fetched_activities.length > 0 && message) {
@@ -54,7 +56,29 @@ const Activity = () => {
     }
   }, [fetched_activities, message])
 
+  useEffect(() => {
+    console.log("check fetched invites", fetched_invites, " check: " , fetched_invites.inviteds)
+    if (fetched_invites.inviteds && fetched_invites.inviteds.length > 0){
+      console.log("start dispatch getActivitiesByInvites")
+      dispatch(getActivitiesByInvites(fetched_invites.inviteds))
+    }
+  }, [fetched_invites])
 
+  useEffect(()=>{
+    if (invited_activities.length && invited_activities.length > 0){
+      console.log("check invited activities", invited_activities)
+      // combine all activities and sort by date
+      const activities = [...fetched_activities, ...invited_activities];
+      activities.sort((a, b) => new Date(a.date) - new Date(b.date));
+      setAllActivities(activities);
+    }
+  }, [invited_activities, fetched_activities])
+
+  useEffect(() => {
+    if (allActivities.length>0){
+      console.log("check all activities: ", allActivities)
+    }
+  }, [allActivities])
 
   // input form
   const [activityID, setActivityID] = useState("")
@@ -66,7 +90,6 @@ const Activity = () => {
   const [toInput, setToInput] = useState("")
   const [weather, setWeather] = useState("")
 
-  const [submitFired, setSubmitFire] = useState("")
 
 
   const formData = {
@@ -125,10 +148,6 @@ const Activity = () => {
 
 
 
-  
-  useEffect(() => {
-    console.log("weather changed", weather, " In city: ", formData)
-  }, [weather])
 
   const editActivity = async () => {
     const selectedDate = new Date(dateInput).getTime();
@@ -183,6 +202,23 @@ const Activity = () => {
       setShow(true)
     }
   };
+  
+
+  const getInvitedsByID = (act) => {
+    let invites = []
+    if (act.host !== user._id){
+      invites = fetched_invites.inviteds.filter((invite) => invite.activity === act._id);
+    }
+    return invites;
+  }
+  const getInvitesByID = (act) => {
+    let invites = []
+    if (act.host === user._id) {
+      invites = fetched_invites.invites.filter((invite) => invite.activity === act._id);
+    }
+    return invites;
+  }
+
   return (
     <div className='login'>
       <Container className="w-75" >
@@ -190,12 +226,12 @@ const Activity = () => {
 
 
           {
-            fetched_activities.length > 0 ? (
-              fetched_activities.map((act) => (
+            allActivities.length > 0 ? (
+              allActivities.map((act) => (
                 <div key={act._id}>
                   <div className="list-group-item list-group-item-action flex-column align-items-start" >
                     <div className="d-flex w-100 justify-content-between">
-                      <h5 className="mb-1">{act.name}</h5>
+                      <h5 className="mb-1">{act.name} {act.host === user._id ? "" : "- Host: " + getInvitedsByID(act)[0].hostname}</h5>
                       <button type="button" className="btn-close" aria-label="Close" onClick={() => dispatch(deleteActivity(act._id))}>
 
                       </button>
@@ -215,7 +251,15 @@ const Activity = () => {
                         <button type="button" name="addfriend" className="btn btn-primary btn-sm mt-2" onClick={(e) => handleShow(e, act)} style={{ marginLeft: "0.5rem" }}>Add Friend</button>
                       </div>
                       <div>
-                        <button type="button" className="btn btn-success btn-sm mt-2" style={{ marginLeft: "0.5rem" }}>batman</button>
+
+                        {getInvitedsByID(act).map((invite) => (
+                          <button type="button" className="btn btn-danger btn-sm mt-2" style={{ marginLeft: "0.5rem" }}>{invite.hostname} (host) </button>
+                        ))}
+
+                        {getInvitesByID(act).map((invite) => (
+                          <button type="button" className="btn btn-success btn-sm mt-2" style={{ marginLeft: "0.5rem" }}>{invite.guestname} </button>
+                        ))}
+                      
 
                       </div>
                     </div>

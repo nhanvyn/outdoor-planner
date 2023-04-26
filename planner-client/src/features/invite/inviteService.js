@@ -6,25 +6,29 @@ if (mode === "production") {
   API_URL = "https://outplanner.onrender.com/invite"
 }
 
-const addInvite = async (invite, token) => {
+const addInvites = async (activity, invites, token) => {
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   }
-  const response = await axios.post(API_URL + "/", invite, config)
+  console.log("Invites service send invite")
+  const response = await axios.post(API_URL + "/", { activity, invites }, config)
   return response.data
 }
 
-const getActivities = async (token) => {
+
+const getInvites = async (token) => {
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   }
   const response = await axios.get(API_URL + "/", config)
+  console.log("Get here getInvites ")
   return response.data
 }
+
 
 
 const deleteInvite = async (invite_id, token) => {
@@ -51,11 +55,12 @@ const updateInvite = async (invite_id, formData, token) => {
 
 
 
+
 const authService = {
-  addInvite,
-  getActivities,
+  addInvites,
   deleteInvite,
-  updateInvite
+  updateInvite,
+  getInvites
 }
 
 export default authService

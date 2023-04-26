@@ -16,7 +16,8 @@ const getUsers = asyncHandler(async (req, res) => {
   // select('-password'): do not return password to client
   // lean(): only return json object without return the whole mongoose document
   // after using lean(), save() and remove() can't be used anymore because they are both inside the doc
-  const users = await User.find().select('-password').lean()
+  console.log("user id check: ", req.user.id)
+  const users = await User.find({ _id: { $ne: req.user.id } }).select('-password').lean()
   if (!(users?.length)) {
     // check if users exist first, if exist, check if length == 0
     return res.status(400).json({ message: 'No user record was found' })

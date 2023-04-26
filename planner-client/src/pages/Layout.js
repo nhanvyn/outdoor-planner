@@ -7,7 +7,7 @@ import { fetchData, fetchFutureData, getWeatherWidget } from "../utils/weather";
 import Modal from 'react-bootstrap/Modal';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { addActivity, reset } from "../features/activity/activitySlice";
-import { addInvite, reset as resetInvite } from "../features/invite/inviteSlice";
+import { addInvites, reset as resetInvite } from "../features/invite/inviteSlice";
 import { getGuests } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
@@ -165,7 +165,7 @@ const Layout = () => {
 
   }
 
-
+  // dispatch invite after create activities
   useEffect(() => {
     //console.log("created_activities: ", created_activities)
     if (isError) {
@@ -173,8 +173,11 @@ const Layout = () => {
     }
     else if (created_activities.length > 0 && message) {
       showSuccessToast("createActivity: " + message)
+      console.log("check newly created activity: ", created_activities)
+      dispatch(addInvites({ activity: created_activities[0], invites: invites }))
     }
     dispatch(reset())
+    setInvites([])
   }, [created_activities, message, isError])
 
   const createActivity = async () => {
@@ -188,6 +191,11 @@ const Layout = () => {
     else {
       await getTodayData(cityInput, "create")
     }
+
+  
+
+
+
     setCity(cityInput);
     setDate(dateInput);
     setName(nameInput);
@@ -197,64 +205,6 @@ const Layout = () => {
 
   }
 
-
-  // Modal
-  const [show, setShow] = useState(false);
-  const [activePage, setActivePage] = useState(1);
-
-  const handleClose = () => {
-    setShow(false);
-    setActivePage(1); // Reset the active page when closing the modal
-  };
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    createActivity()
-    handleClose();
-  }
-
-  const handleShow = () => {
-    if (user) {
-      setShow(true)
-    } else {
-      navigate('/login')
-    }
-  };
-  const nextPage = () => setActivePage(activePage + 1);
-  const previousPage = () => setActivePage(activePage - 1);
-
-  // Searching user
-  // const guests = [
-  //   {
-  //     name: "aaaaaaa",
-  //     id: "1"
-  //   },
-  //   {
-  //     name: "aabbbbbb",
-  //     id: "2"
-
-  //   },
-  //   {
-  //     name: "bccccc",
-  //     id: "3"
-
-  //   },
-  //   {
-  //     name: "bbdddddddd",
-  //     id: "4"
-
-  //   },
-  //   {
-  //     name: "aeeeee",
-  //     id: "5"
-
-  //   },
-  //   {
-  //     name: "fffff",
-  //     id: "6"
-
-  //   }
-  // ]
 
   const [filGuests, setFilGuests] = useState([])
   const [value, setValue] = useState("")
@@ -292,6 +242,34 @@ const Layout = () => {
     const users = guests.filter((guest) => guest.username.toLowerCase().trim().startsWith(value.toLowerCase().trim()))
     setFilGuests(users)
   }, [value, guests])
+
+
+
+  // Modal
+  const [show, setShow] = useState(false);
+  const [activePage, setActivePage] = useState(1);
+
+  const handleClose = () => {
+    setShow(false);
+    setActivePage(1); // Reset the active page when closing the modal
+  };
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    createActivity()
+   
+    handleClose();
+  }
+
+  const handleShow = () => {
+    if (user) {
+      setShow(true)
+    } else {
+      navigate('/login')
+    }
+  };
+  const nextPage = () => setActivePage(activePage + 1);
+  const previousPage = () => setActivePage(activePage - 1);
 
   return (
     <div className="container">

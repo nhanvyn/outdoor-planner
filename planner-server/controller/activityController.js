@@ -35,6 +35,28 @@ const getActivities = asyncHandler(async (req, res) => {
   }
 })
 
+
+const getActivitiesByInvites = asyncHandler(async (req, res) => {
+  try {
+    
+   
+    const invites = req.query.invites
+    console.log("In controller: print invites body", req.query.invites)
+    const activities = await Promise.all(
+      invites.map(async (invite) => {
+        const activity = await Activity.findOne({ _id: invite.activity });
+        return activity
+      })
+    )
+   
+
+    return res.status(200).json(activities);
+  } catch (error) {
+    return res.status(400).json({ message: 'Error getting your activities by invites', error: error.message });
+  }
+})
+
+
 const deleteActivity = asyncHandler(async (req, res) => {
   try {
     const activity = await Activity.findById(req.params.id)
@@ -89,5 +111,6 @@ module.exports = {
   addActivity,
   getActivities,
   deleteActivity,
-  updateActivity
+  updateActivity,
+  getActivitiesByInvites
 }

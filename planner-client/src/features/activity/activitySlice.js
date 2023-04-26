@@ -6,6 +6,7 @@ import activityService from './activityService'
 const initialState = {
   created_activities: [],
   fetched_activities: [],
+  invited_activities: [],
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -31,6 +32,20 @@ export const getActivities = createAsyncThunk('activity/getActivities', async (_
     const token = thunkAPI.getState().auth.user.token
     return await activityService.getActivities(token)
   } catch (error) {
+    const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString()
+    return thunkAPI.rejectWithValue(message)
+  }
+})
+
+
+
+
+export const getActivitiesByInvites = createAsyncThunk('activity/invites', async (invites, thunkAPI) => {
+  try {
+    const token = thunkAPI.getState().auth.user.token
+    return await activityService.getActivitiesByInvites(invites, token)
+  } catch (error) {
+    console.log("byInvites err:", error)
     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString()
     return thunkAPI.rejectWithValue(message)
   }
@@ -91,6 +106,16 @@ export const activitySlice = createSlice({
       state.isSuccess = true
       state.message = action.payload
       state.fetched_activities = action.payload
+    }).addCase(getActivitiesByInvites.pending, (state) => {
+      state.isLoading = true
+    }).addCase(getActivitiesByInvites.fulfilled, (state, action) => {
+      state.isLoading = false
+      state.isSuccess = true
+      state.message = action.payload
+      state.invited_activities = action.payload
+    }).addCase(getActivitiesByInvites.rejected, (state, action) => {
+      state.isLoading = false
+      console.log("getActivitiesByInvites is rejected")
     }).addCase(deleteActivity.pending, (state) => {
       state.isLoading = true
     }).addCase(deleteActivity.fulfilled, (state, action) => {

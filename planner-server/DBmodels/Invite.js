@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 
 const inviteSchema = new mongoose.Schema({
-  
+
   activity: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -13,10 +13,18 @@ const inviteSchema = new mongoose.Schema({
     required: true,
     ref: 'User',
   },
+  hostname: {
+    type: String,
+    require: true
+  },
   guest: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: 'User',
+  },
+  guestname: {
+    type: String,
+    require: true
   },
   name: {
     type: String,

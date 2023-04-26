@@ -26,6 +26,21 @@ const getActivities = async (token) => {
   return response.data
 }
 
+const getActivitiesByInvites = async (invites, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params: {
+      invites: invites,
+    },
+  }
+  const response = await axios.get(API_URL + "/invites", config)
+  return response.data
+}
+
+
+
 
 const deleteActivity = async (activity_id, token) => {
   const config = {
@@ -55,7 +70,8 @@ const authService = {
   addActivity,
   getActivities,
   deleteActivity,
-  updateActivity
+  updateActivity,
+  getActivitiesByInvites
 }
 
 export default authService

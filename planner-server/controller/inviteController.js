@@ -2,34 +2,56 @@ const Invite = require('../DBmodels/Invite')
 const asyncHandler = require('express-async-handler')
 
 
+
 const addInvite = asyncHandler(async (req, res) => {
   try {
-    console.log("req body = ", req.body)
-    const { activity, user, guest, name } = req.body;
+    console.log("Invites req body = ", req.body);
+    const { activity, invites } = req.body;
 
+    const newInvites = await Promise.all(
+      invites.map(async (invite) => {
+        const newInvite = await Invite.create({
+          activity: activity._id,
+          host: req.user.id,
+          hostname: req.user.username,
+          guest: invite._id,
+          guestname: invite.username,
+          name: activity.name
+        });
+        return newInvite;
+      })
+    );
 
-    const newInvite = await Invite.create({
-      activity: activity._id,
-      host: user._id,
-      guest: guest._id,
-      name: name
-    });
-    return res.status(201).json(newInvite);
+    return res.status(201).json(newInvites);
   } catch (error) {
+    console.log("error creating invites: ", error)
     return res.status(400).json({ message: 'Error creating Invite', error: error.message });
   }
-})
+});
 
 
-const getActivities = asyncHandler(async (req, res) => {
+
+
+
+
+const getInvites = asyncHandler(async (req, res) => {
   try {
-    const activities = await Invite.find({ host: req.user.id })
-
-    return res.status(200).json(activities);
+    console.log("check req user", req.user)
+    const invites = await Invite.find({ host: req.user.id })
+    const inviteds = await Invite.find({guest: req.user.id})
+    
+    console.log("check invites and invited: ", invites, inviteds)
+    return res.status(200).json({
+      invites, inviteds
+    });
   } catch (error) {
-    return res.status(400).json({ message: 'Error getting your activities', error: error.message });
+    console.log("getInvites error:", error)
+    return res.status(400).json({ message: 'Error getting your invites', error: error.message });
   }
 })
+
+
+
 
 const deleteInvite = asyncHandler(async (req, res) => {
   try {
@@ -83,7 +105,7 @@ const updateInvite = asyncHandler(async (req, res) => {
 
 module.exports = {
   addInvite,
-  getActivities,
+  getInvites,
   deleteInvite,
   updateInvite
 }

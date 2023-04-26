@@ -8,6 +8,7 @@ app.use(express.json())
 
 router.post('/', protect, activityController.addActivity)
   .get('/', protect, activityController.getActivities)
+  .get('/invites', protect, activityController.getActivitiesByInvites)
   .delete('/:id', protect, activityController.deleteActivity)
   .put('/:id', protect, activityController.updateActivity)
 module.exports = router

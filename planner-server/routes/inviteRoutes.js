@@ -7,7 +7,7 @@ app.use(express.json())
 
 
 router.post('/', protect, inviteController.addInvite)
-  // .get('/', protect, inviteController.getInvite)
+      .get('/', protect, inviteController.getInvites)
   // .delete('/:id', protect, inviteController.deleteInvite)
   // .put('/:id', protect, inviteController.updateInvite)
 module.exports = router
