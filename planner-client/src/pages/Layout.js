@@ -80,7 +80,6 @@ const Layout = () => {
   // note: update and createAct both call getFuture data -> need to seperate
 
   const getTodayData = async (cityArg, cmd) => {
-    console.log("get today data is called")
     await fetchData(cityArg, key).then((res) => {
       if (res) {
         setData(res);
@@ -99,13 +98,11 @@ const Layout = () => {
     }).catch((error) => {
       console.log(error)
       showErrorToast(error + " City Not Found: " + cityArg)
-      console.log("formData error:", formData)
     });
   }
 
   const getFutureData = async (cityArg, dateArg, cmd) => {
     await fetchFutureData(cityArg, key).then((res) => {
-      console.log("get future called")
       if (res) {
         let updated_weather = "unknown"
         let weather_obj;
@@ -136,7 +133,7 @@ const Layout = () => {
   }
 
   const updateWeather = () => {
-    console.log("update weather called")
+    // console.log("update weather called")
     const selectedDate = new Date(date).getTime();
     const todayDate = new Date(today).getTime();
     if (selectedDate > todayDate) {
@@ -232,10 +229,6 @@ const Layout = () => {
       dispatch(getGuests())
     }
   }, [dispatch, user])
-
-  useEffect(() => {
-    console.log("check guest fetching: ", guests)
-  }, [guests])
 
   useEffect(() => {
     // filter guest by word 

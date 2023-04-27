@@ -60,7 +60,6 @@ export const authSlice = createSlice({
   reducers: {
     // not async here
     reset: (state) => {
-      console.log("reducers reset called")
       state.isLoading = false
       state.isError = false
       state.isSuccess = false
@@ -111,7 +110,6 @@ export const authSlice = createSlice({
         state.user = null
       })
       .addCase(getGuests.fulfilled, (state, action) => {
-        console.log("getGuests fullfilled")
         state.isLoading = false
         state.isSuccess = true
         state.message = action.payload.message

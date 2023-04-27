@@ -1,27 +1,22 @@
 
 import "./Activity.css"
 import { Container } from "react-bootstrap";
-import { WiDaySunny, WiCloud, WiFog, WiSnow, WiRain } from 'weather-icons-react';
 
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+import { Button, Form, InputGroup } from 'react-bootstrap';
 import { useState, useEffect } from "react";
 import { fetchData, fetchFutureData, getWeatherWidget } from "../utils/weather";
 import Modal from 'react-bootstrap/Modal';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
-import { reset, getActivities, deleteActivity, updateActivity, getActivitiesByInvites } from "../features/activity/activitySlice";
-
+import { reset, getActivities, deleteActivity, updateActivity, getActivitiesByInvites, removeInvitedActivitiesByID } from "../features/activity/activitySlice";
+import { BiSearch } from 'react-icons/bi';
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
-import { addInvites, getInvites, reset as resetInvite } from "../features/invite/inviteSlice";
-
+import { addInvites, deleteInvitesByActivityID, getInvites, reset as resetInvite } from "../features/invite/inviteSlice";
+import { getGuests } from "../features/auth/authSlice";
+import { HiUserCircle } from 'react-icons/hi'
 
 
 const Activity = () => {
-
-
-
-
   let today_date_obj = new Date();
   let today = today_date_obj.toISOString().slice(0, 10)
   let next5Days_obj = new Date();
@@ -29,9 +24,10 @@ const Activity = () => {
   let next5Days = next5Days_obj.toISOString().slice(0, 10)
   const key = process.env.REACT_APP_API_KEY
 
-  const { user } = useSelector((state) => state.auth)
-  const { fetched_activities, invited_activities ,message, isError, isLoading } = useSelector((state) => state.act)
+  const { user, guests } = useSelector((state) => state.auth)
+  const { fetched_activities, invited_activities ,message, isError } = useSelector((state) => state.act)
   const { fetched_invites } = useSelector((state) => state.invite)
+  
   const [allActivities, setAllActivities] = useState([])
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -59,24 +55,30 @@ const Activity = () => {
   useEffect(() => {
     console.log("check fetched invites", fetched_invites, " check: " , fetched_invites.inviteds)
     if (fetched_invites.inviteds && fetched_invites.inviteds.length > 0){
-      console.log("start dispatch getActivitiesByInvites")
       dispatch(getActivitiesByInvites(fetched_invites.inviteds))
     }
   }, [fetched_invites])
 
   useEffect(()=>{
-    if (invited_activities.length && invited_activities.length > 0){
-      console.log("check invited activities", invited_activities)
+    // console.log("rerender: check invited activities", invited_activities)
+    if (invited_activities.length > 0){
+      
       // combine all activities and sort by date
       const activities = [...fetched_activities, ...invited_activities];
       activities.sort((a, b) => new Date(a.date) - new Date(b.date));
       setAllActivities(activities);
+    } else if (fetched_activities.length > 0 && fetched_invites.invites){
+      setAllActivities(fetched_activities)
+    } else {
+      setAllActivities([])
     }
   }, [invited_activities, fetched_activities])
 
+  
+
   useEffect(() => {
     if (allActivities.length>0){
-      console.log("check all activities: ", allActivities)
+      // console.log("check all activities: ", allActivities)
     }
   }, [allActivities])
 
@@ -89,7 +91,6 @@ const Activity = () => {
   const [fromInput, setFromInput] = useState("")
   const [toInput, setToInput] = useState("")
   const [weather, setWeather] = useState("")
-
 
 
   const formData = {
@@ -145,10 +146,6 @@ const Activity = () => {
     });
   }
 
-
-
-
-
   const editActivity = async () => {
     const selectedDate = new Date(dateInput).getTime();
     const todayDate = new Date(today).getTime();
@@ -196,14 +193,52 @@ const Activity = () => {
       setFromInput(activity.from);
       setToInput(activity.to);
       setWeather(activity.weather)
-      if (event.target.name == "addfriend") {
+      if (event.target.name === "addfriend") {
         nextPage()
       }
       setShow(true)
     }
   };
+
+
+  // search
+
+  const [filGuests, setFilGuests] = useState([])
+  const [value, setValue] = useState("")
+  const [invites, setInvites] = useState([])
+  const handleInvite = (guest) => {
+    const guestExists = invites.some((existingGuest) => existingGuest._id === guest._id);
+    if (guestExists) {
+      return;
+    }
+
+    const newInvites = [...invites, guest]
+    setInvites(newInvites)
+  }
+  const onWordTyped = (e) => {
+    setValue(e.target.value)
+  }
+
+  const handleRemove = (guestToRemove) => {
+    const newInvites = invites.filter((guest) => guest !== guestToRemove)
+    setInvites(newInvites)
+  }
+
+  useEffect(() => {
+    if (user) {
+      dispatch(getGuests())
+    }
+  }, [dispatch, user])
+
+  useEffect(() => {
+    // filter guest by word 
+    const users = guests.filter((guest) => guest.username.toLowerCase().trim().startsWith(value.toLowerCase().trim()))
+    setFilGuests(users)
+  }, [value, guests])
+
   
 
+  // helper functions
   const getInvitedsByID = (act) => {
     let invites = []
     if (act.host !== user._id){
@@ -219,6 +254,21 @@ const Activity = () => {
     return invites;
   }
 
+  const handleDelete = (act) => {
+    if (act.host === user._id) {
+      dispatch(deleteActivity(act._id))
+      dispatch(deleteInvitesByActivityID(act._id))
+    }
+    else {
+      showSuccessToast("Deleting invitation")
+      // remove all invites 
+      // remove all invited_activities
+      dispatch(removeInvitedActivitiesByID(act._id))
+      
+    }
+
+  }
+
   return (
     <div className='login'>
       <Container className="w-75" >
@@ -232,8 +282,8 @@ const Activity = () => {
                   <div className="list-group-item list-group-item-action flex-column align-items-start" >
                     <div className="d-flex w-100 justify-content-between">
                       <h5 className="mb-1">{act.name} {act.host === user._id ? "" : "- Host: " + getInvitedsByID(act)[0].hostname}</h5>
-                      <button type="button" className="btn-close" aria-label="Close" onClick={() => dispatch(deleteActivity(act._id))}>
-
+                      <button type="button" className="btn-close" aria-label="Close" 
+                      onClick={() => handleDelete(act)}>
                       </button>
                     </div>
 
@@ -246,28 +296,40 @@ const Activity = () => {
                     <p className="mb-1">{act.note}</p>
 
                     <div className="d-flex w-100 justify-content-between">
-                      <div>
+                      {act.host === user._id ? (<div>
                         <button type="button" name="edit" className="btn btn-warning btn-sm mt-2" onClick={(e) => handleShow(e, act)}>Edit information</button>
                         <button type="button" name="addfriend" className="btn btn-primary btn-sm mt-2" onClick={(e) => handleShow(e, act)} style={{ marginLeft: "0.5rem" }}>Add Friend</button>
                       </div>
+                      ): 
+                      (
+                          <>
+                            <div>
+                              <button type="button" name="edit" className="btn btn-warning btn-sm mt-2" onClick={(e) => showErrorToast(`You do not have permission to edit information from host`)}>Edit information</button>
+                              <button type="button" name="addfriend" className="btn btn-primary btn-sm mt-2" onClick={(e) => showErrorToast(`Your do not have permission to add friend from host`)} style={{ marginLeft: "0.5rem" }}>Add Friend</button>
+                            </div>
+                          </>
+                      )}
+                      
+
+
                       <div>
 
                         {getInvitedsByID(act).map((invite) => (
-                          <button type="button" className="btn btn-danger btn-sm mt-2" style={{ marginLeft: "0.5rem" }}>{invite.hostname} (host) </button>
+                          <button type="button" key={invite._id} className="btn btn-danger btn-sm mt-2" style={{ marginLeft: "0.5rem" }}>{invite.hostname} (host) </button>
                         ))}
 
                         {getInvitesByID(act).map((invite) => (
-                          <button type="button" className="btn btn-success btn-sm mt-2" style={{ marginLeft: "0.5rem" }}>{invite.guestname} </button>
+                          <button type="button" key={invite._id} className="btn btn-success btn-sm mt-2" style={{ marginLeft: "0.5rem" }}>{invite.guestname} </button>
                         ))}
-                      
-
                       </div>
                     </div>
+
+                    
                   </div>
 
                   <Modal show={show} onHide={handleClose}>
                     <Modal.Header>
-                      {activePage == 1 ? (
+                      {activePage === 1 ? (
                         <>
                           <Modal.Title>Additional information</Modal.Title>
                           <Button variant="primary" onClick={nextPage}>
@@ -372,9 +434,62 @@ const Activity = () => {
 
 
                       ) : (
-                        <Form>
-                          <p>Premium feature - comming soon </p>
-                        </Form>
+                          <Form>
+
+                            <Form.Group>
+
+                              <InputGroup>
+                                <span className="input-group-text bg-white border-end-0"><BiSearch /></span>
+                                <Form.Control
+                                  type="search"
+                                  className="border-start-0"
+                                  placeholder="Search here.."
+                                  value={value}
+                                  onChange={onWordTyped}
+                                />
+                              </InputGroup>
+                              <ul className="list-group" style={{ maxHeight: " 200px", overflowY: "scroll" }}>
+
+                                {
+                                  filGuests.map((guest) => (
+
+                                    <li className="list-group-item list-group-item-action d-flex justify-content-between align-items-center" key={guest._id} style={{ cursor: "pointer" }} onClick={() => handleInvite(guest)}>
+                                      <div> <HiUserCircle size={24} className="me-2" />
+                                        {guest.username}
+                                      </div>
+
+                                    </li>
+                                  ))
+                                }
+
+                              </ul>
+                            </Form.Group>
+
+                            <Form.Group className="mt-1">
+                              <Form.Label className="ms-1" style={{ fontSize: '10px', color: '#999999' }}>Invite list</Form.Label>
+                              <ul className="list-group" style={{ maxHeight: " 250px", overflowY: "scroll" }}>
+
+                                {
+                                  invites.map((guest) => (
+                                    <li className="list-group-item  d-flex justify-content-between align-items-center" key={guest._id}>
+                                      <div> <HiUserCircle size={24} className="me-2" />
+                                        {guest.username}
+                                      </div>
+
+                                      <Button variant="primary" onClick={() => handleRemove(guest)}>
+                                        Remove
+                                      </Button>
+                                    </li>
+                                  ))
+                                }
+                         
+                                
+
+                              </ul>
+                            </Form.Group>
+
+
+                          </Form>
                       )}
                     </Modal.Body>
                   </Modal>

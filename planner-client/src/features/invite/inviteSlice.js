@@ -1,11 +1,13 @@
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, current } from '@reduxjs/toolkit'
 import inviteService from './inviteService'
 
 
 const initialState = {
   created_invites: [],
   fetched_invites: [],
+  user_invites: [],
+  user_inviteds: [],
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -37,6 +39,18 @@ export const getInvites = createAsyncThunk('invite/getInvites', async (_, thunkA
     return thunkAPI.rejectWithValue(message)
   }
 })
+
+export const deleteInvitesByActivityID = createAsyncThunk('invite/byActivity', async (activity_id, thunkAPI) => {
+  try {
+    const token = thunkAPI.getState().auth.user.token
+    return await inviteService.deleteInvitesByActivityID(activity_id, token)
+  } catch (error) {
+    const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString()
+    console.log("deleteInvitesByActivityID Error: ", error)
+    return thunkAPI.rejectWithValue(message)
+  }
+})
+
 
 export const deleteInvite = createAsyncThunk('invite/deleteInvite', async (invite_id, thunkAPI) => {
   try {
@@ -71,6 +85,8 @@ export const inviteSlice = createSlice({
       // console.log("check state Invites before reset: ", state.fetched_invites.length, "check state message: ", state.message)
       state.created_invites = initialState.created_invites;
       state.fetched_invites = initialState.fetched_invites;
+      state.user_inviteds = initialState.user_inviteds;
+      state.user_invites = initialState.user_invites;
       state.isError = initialState.isError;
       state.isSuccess = initialState.isSuccess;
       state.isLoading = initialState.isLoading;
@@ -95,30 +111,46 @@ export const inviteSlice = createSlice({
       state.isSuccess = true
       state.message = action.payload
       state.fetched_invites = action.payload
+      console.log("check payload: ", action.payload)
+      state.user_invites = action.payload.invites
+      state.user_inviteds = action.payload.inviteds
+      // console.log("in slice check fetched invites1: ", state.fetched_invites)
     }).addCase(getInvites.rejected, (state, action) => {
       console.log("getInvite rejected: ", action.payload)
-    }).addCase(deleteInvite.pending, (state) => {
+    }).addCase(deleteInvitesByActivityID.pending, (state) => {
       state.isLoading = true
-    }).addCase(deleteInvite.fulfilled, (state, action) => {
+    }).addCase(deleteInvitesByActivityID.fulfilled, (state, action) => {
+      console.log("in slice check fetched invites2: ", current(state.fetched_invites))
       state.isLoading = false
       state.isSuccess = true
-      state.message = action.payload.message
-      state.fetched_invites = state.fetched_invites.filter((invite) => invite._id !== action.payload.id)
-    }).addCase(updateInvite.pending, (state) => {
-      state.isLoading = true
-    }).addCase(updateInvite.fulfilled, (state, action) => {
-      state.isLoading = false
-      state.isSuccess = true
-      state.message = action.payload.message
-      const index = state.fetched_invites.findIndex(invite => invite._id === action.payload.updated._id)
-      if (index !== -1) {
-        state.fetched_invites[index] = action.payload.updated
-        console.log("returned: ", action.payload.updated)
-      }
-
-    }).addCase(updateInvite.rejected, (state, action) => {
-      console.log("rejected: ", state.message)
+      state.message = action.payload
+      console.log("check  invites array bf filter: ", current(state.fetched_invites).invites)
+    }).addCase(deleteInvitesByActivityID.rejected, (state, action) => {
+      console.log("deleteInvitesByActivityID rejected: ", action.payload)
     })
+      .addCase(deleteInvite.pending, (state) => {
+        // state.isLoading = true
+      }).addCase(deleteInvite.fulfilled, (state, action) => {
+        // state.isLoading = false
+        // state.isSuccess = true
+        // state.message = action.payload.message
+        // state.fetched_invites = state.fetched_invites.filter((invite) => invite._id !== action.payload.id)
+
+      }).addCase(updateInvite.pending, (state) => {
+        // state.isLoading = true
+      }).addCase(updateInvite.fulfilled, (state, action) => {
+        // state.isLoading = false
+        // state.isSuccess = true
+        // state.message = action.payload.message
+        // const index = state.fetched_invites.findIndex(invite => invite._id === action.payload.updated._id)
+        // if (index !== -1) {
+        //   state.fetched_invites[index] = action.payload.updated
+        //   console.log("returned: ", action.payload.updated)
+        // }
+
+      }).addCase(updateInvite.rejected, (state, action) => {
+        console.log("rejected: ", state.message)
+      })
   }
 })
 

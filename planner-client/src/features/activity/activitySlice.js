@@ -24,9 +24,6 @@ export const addActivity = createAsyncThunk('activity/addActivity', async (activ
   }
 })
 
-
-
-
 export const getActivities = createAsyncThunk('activity/getActivities', async (_, thunkAPI) => {
   try {
     const token = thunkAPI.getState().auth.user.token
@@ -36,9 +33,6 @@ export const getActivities = createAsyncThunk('activity/getActivities', async (_
     return thunkAPI.rejectWithValue(message)
   }
 })
-
-
-
 
 export const getActivitiesByInvites = createAsyncThunk('activity/invites', async (invites, thunkAPI) => {
   try {
@@ -60,9 +54,6 @@ export const deleteActivity = createAsyncThunk('activity/deleteActivity', async 
     return thunkAPI.rejectWithValue(message)
   }
 })
-
-
-
 export const updateActivity = createAsyncThunk('activity/updateActivity', async ({activity_id, formData}, thunkAPI) => {
   try {
     console.log("form to be sent: ", formData)
@@ -81,14 +72,18 @@ export const activitySlice = createSlice({
   initialState,
   reducers: {
     reset: (state) => {
-      // console.log("check state activities before reset: ", state.fetched_activities.length, "check state message: ", state.message)
       state.created_activities = initialState.created_activities;
       state.fetched_activities = initialState.fetched_activities;
       state.isError = initialState.isError;
       state.isSuccess = initialState.isSuccess;
       state.isLoading = initialState.isLoading;
       state.message = initialState.message;
-      // console.log("check state activities after reset: ", state.fetched_activities.length)
+    },
+    removeInvitedActivitiesByID: (state, action) => {
+      const activity_id = action.payload;
+      state.invited_activities = [...state.invited_activities].filter(activity => activity._id !== activity_id);
+     
+      console.log("after remove invited activities:", state.invited_activities)
     }
   },
   extraReducers: (builder) => {
@@ -142,5 +137,5 @@ export const activitySlice = createSlice({
 })
 
 
-export const { reset } = activitySlice.actions
+export const { reset, removeInvitedActivitiesByID } = activitySlice.actions
 export default activitySlice.reducer 

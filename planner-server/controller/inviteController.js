@@ -5,7 +5,7 @@ const asyncHandler = require('express-async-handler')
 
 const addInvite = asyncHandler(async (req, res) => {
   try {
-    console.log("Invites req body = ", req.body);
+    //console.log("Invites req body = ", req.body);
     const { activity, invites } = req.body;
 
     const newInvites = await Promise.all(
@@ -36,11 +36,11 @@ const addInvite = asyncHandler(async (req, res) => {
 
 const getInvites = asyncHandler(async (req, res) => {
   try {
-    console.log("check req user", req.user)
+    //console.log("check req user", req.user)
     const invites = await Invite.find({ host: req.user.id })
     const inviteds = await Invite.find({guest: req.user.id})
     
-    console.log("check invites and invited: ", invites, inviteds)
+    //console.log("check invites and invited: ", invites, inviteds)
     return res.status(200).json({
       invites, inviteds
     });
@@ -51,6 +51,21 @@ const getInvites = asyncHandler(async (req, res) => {
 })
 
 
+const deleteInvitesByActivityID = asyncHandler(async (req, res) => {
+  try {
+    const invites = await Invite.deleteMany({ activity: req.params.id });
+
+
+    return res.status(200).json({
+      message: "Deleted " + invites.deletedCount + " invites",
+      activity_id : req.params.id
+    })
+
+  } catch (error) {
+    console.log("deleteInvitesByActivityID error: ", error)
+    return res.status(400).json({ message: 'Error deleting your invites by activity id', error: error.message });
+  }
+});
 
 
 const deleteInvite = asyncHandler(async (req, res) => {
@@ -107,5 +122,6 @@ module.exports = {
   addInvite,
   getInvites,
   deleteInvite,
-  updateInvite
+  updateInvite,
+  deleteInvitesByActivityID
 }

@@ -41,7 +41,7 @@ const getActivitiesByInvites = asyncHandler(async (req, res) => {
     
    
     const invites = req.query.invites
-    console.log("In controller: print invites body", req.query.invites)
+    // console.log("In controller: print invites body", req.query.invites)
     const activities = await Promise.all(
       invites.map(async (invite) => {
         const activity = await Activity.findOne({ _id: invite.activity });
