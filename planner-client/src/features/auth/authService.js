@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 
-const mode = process.env.MODE
+const mode = process.env.REACT_APP_API_MODE
 let API_URL = 'http://localhost:3500/users'
 if (mode === "production"){
   API_URL = "https://outplanner.onrender.com/users"
