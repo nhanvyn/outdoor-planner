@@ -66,15 +66,18 @@ const deleteInvited = async (inviteds, token) => {
 }
 
 
-const updateInvite = async (invite_id, formData, token) => {
-
+const updateInvites = async (newInvites, act, token) => {
+  const params = new URLSearchParams();
+  params.append('newInvites', JSON.stringify(newInvites));
+  params.append('act', JSON.stringify(act));
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    params: params,
   }
-
-  const response = await axios.put(API_URL + "/" + invite_id, formData, config)
+  console.log("in inviteService check params:", newInvites, " and ", act)
+  const response = await axios.put(API_URL + "/", {}, config)
   return response.data
 }
 
@@ -84,7 +87,7 @@ const updateInvite = async (invite_id, formData, token) => {
 const authService = {
   addInvites,
   deleteInvite,
-  updateInvite,
+  updateInvites,
   getInvites,
   deleteInvited,
   deleteInvitesByActivityID

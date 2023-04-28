@@ -94,7 +94,7 @@ const deleteInvite = asyncHandler(async (req, res) => {
 const deleteInvited = asyncHandler(async (req, res) => {
   try {
     const inviteds = req.query.inviteds
-    console.log("In controller: check inviteds: ", inviteds)
+    //console.log("In controller: check inviteds: ", inviteds)
 
     await Promise.all(
       inviteds.map(async (invited) => {
@@ -117,28 +117,39 @@ const deleteInvited = asyncHandler(async (req, res) => {
   }
 })
 
-const updateInvite = asyncHandler(async (req, res) => {
+const updateInvites = asyncHandler(async (req, res) => {
   try {
-    const Invite = await Invite.findById(req.params.id)
-    if (!Invite || !req.user) {
-      return res.status(404).json({ message: 'Resources not found' });
-    }
-    if (Invite.host.toString() !== req.user.id) {
-      return res.status(401).json({ message: 'Unauthorized access' });
-    }
 
+    // console.log("updateInvites check query newInvites = ", newInvites )
+    const newInvites = JSON.parse(req.query.newInvites);
+    const act = JSON.parse(req.query.act);
+    // delete all old invites, all old invites for one activity will have same act._id and same host 
+    const deletedInvites = await Invite.deleteMany({ activity: act._id, host: req.user.id });
+    // now create new invites to replace the deleted one
+    const created_invites = await Promise.all(
+      newInvites.map(async (invite) => {
+        const newInvite = await Invite.create({
+          activity: act._id,
+          host: req.user.id,
+          hostname: req.user.username,
+          guest: invite._id,
+          guestname: invite.username,
+          name: act.name
+        });
+        return newInvite;
+      })
+    );
 
-    const updatedAct = await Invite.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    })
-
-
-    return res.status(200).json({
-      message: "Successfully updated Invite",
-      updated: updatedAct
-    })
+    return res.status(201).json({
+      "newInvites": created_invites,
+      "message": "successfully updated invites",
+      "deletedInvites": deletedInvites,
+      "activity_id": act._id
+    });
+    
   } catch (error) {
-    return res.status(400).json({ message: 'Error updating your Invite', error: error.message });
+    console.log("Error updateing your invites: ", error)
+    return res.status(400).json({ message: 'Error updating your Invite', error: error });
   }
 })
 
@@ -148,7 +159,7 @@ module.exports = {
   addInvite,
   getInvites,
   deleteInvite,
-  updateInvite,
+  updateInvites,
   deleteInvitesByActivityID,
   deleteInvited
 }

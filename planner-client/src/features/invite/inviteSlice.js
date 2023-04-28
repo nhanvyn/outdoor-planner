@@ -27,8 +27,6 @@ export const addInvites = createAsyncThunk('invite/addInvites', async ({ activit
 })
 
 
-
-
 export const getInvites = createAsyncThunk('invite/getInvites', async (_, thunkAPI) => {
   try {
     const token = thunkAPI.getState().auth.user.token
@@ -76,11 +74,10 @@ export const deleteInvited = createAsyncThunk('invite/deleteInvited', async (inv
 
 
 
-export const updateInvite = createAsyncThunk('invite/updateInvite', async ({ invite_id, formData }, thunkAPI) => {
+export const updateInvites = createAsyncThunk('invite/updateInvites', async ({newInvites, act }, thunkAPI) => {
   try {
-    console.log("form to be sent: ", formData)
     const token = thunkAPI.getState().auth.user.token
-    return await inviteService.updateInvite(invite_id, formData, token)
+    return await inviteService.updateInvites(newInvites, act, token)
   } catch (error) {
     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString()
     console.log(error)
@@ -153,19 +150,23 @@ export const inviteSlice = createSlice({
       }).addCase(deleteInvited.rejected, (state, action) => {
         console.log("deleteInvited rejected: ", action.payload)
       })
-      .addCase(updateInvite.pending, (state) => {
-        // state.isLoading = true
-      }).addCase(updateInvite.fulfilled, (state, action) => {
-        // state.isLoading = false
-        // state.isSuccess = true
-        // state.message = action.payload.message
-        // const index = state.fetched_invites.findIndex(invite => invite._id === action.payload.updated._id)
-        // if (index !== -1) {
-        //   state.fetched_invites[index] = action.payload.updated
-        //   console.log("returned: ", action.payload.updated)
-        // }
+      .addCase(updateInvites.pending, (state) => {
+        state.isLoading = true
+      }).addCase(updateInvites.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.isSuccess = true
+        state.message = action.payload.message
+        // replace all user_invites that has same action.payload.activity_id with newInvites
+        // 1. Remove all invites that have action.payload.activity_id
+        state.user_invites = state.user_invites.filter((invite) => invite.activity !== action.payload.activity_id);
 
-      }).addCase(updateInvite.rejected, (state, action) => {
+        // 2. Add new invites to user_invites
+        action.payload.newInvites.forEach((invite) => {
+          state.user_invites.push(invite);
+        });
+        
+
+      }).addCase(updateInvites.rejected, (state, action) => {
         console.log("rejected: ", state.message)
       })
   }

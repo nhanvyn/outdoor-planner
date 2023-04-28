@@ -10,5 +10,5 @@ router.post('/', protect, inviteController.addInvite)
       .get('/', protect, inviteController.getInvites)
       .delete('/byActivity/:id', protect, inviteController.deleteInvitesByActivityID)
       .delete('/', protect, inviteController.deleteInvited)
-  // .put('/:id', protect, inviteController.updateInvite)
+      .put('/', protect, inviteController.updateInvites)
 module.exports = router

@@ -4,7 +4,7 @@ const asyncHandler = require('express-async-handler')
 
 const addActivity = asyncHandler(async (req, res) => {
   try {
-    console.log("req body = ", req.body)
+    // console.log("req body = ", req.body)
     const { user, name, note, date, from, to, city, weather } = req.body;
 
 

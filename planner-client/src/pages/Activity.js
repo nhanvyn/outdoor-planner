@@ -11,7 +11,7 @@ import { reset, getActivities, deleteActivity, updateActivity, getActivitiesByIn
 import { BiSearch } from 'react-icons/bi';
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
-import { addInvites, deleteInvitesByActivityID, getInvites, reset as resetInvite, deleteInvited } from "../features/invite/inviteSlice";
+import { addInvites, deleteInvitesByActivityID, getInvites, reset as resetInvite, deleteInvited, updateInvites } from "../features/invite/inviteSlice";
 import { getGuests } from "../features/auth/authSlice";
 import { HiUserCircle } from 'react-icons/hi'
 
@@ -92,6 +92,7 @@ const Activity = () => {
   const [fromInput, setFromInput] = useState("")
   const [toInput, setToInput] = useState("")
   const [weather, setWeather] = useState("")
+  const [curAct, setCurAct] = useState(null)
 
 
   const formData = {
@@ -121,7 +122,10 @@ const Activity = () => {
           weather: updated_weather
         }
         dispatch(updateActivity({ activity_id: activityID, formData: updatedFormData }))
-
+        const newInvites = potentialInvites
+        const act = curAct
+        dispatch(updateInvites({newInvites, act}))
+    
       }
     }).catch((error) => {
       console.log(error)
@@ -140,6 +144,9 @@ const Activity = () => {
           weather: updated_weather
         }
         dispatch(updateActivity({ activity_id: activityID, formData: updatedFormData }))
+        const newInvites = potentialInvites
+        const act = curAct
+        dispatch(updateInvites({ newInvites, act }))
       }
     }).catch((error) => {
       console.log(error)
@@ -195,6 +202,7 @@ const Activity = () => {
       setFromInput(activity.from);
       setToInput(activity.to);
       setWeather(activity.weather)
+      setCurAct(activity)
       const invitesByID = getInvitedsByID(activity)
       const currentGuests = getInvitesByID(activity).map((invite) => {
         return {
