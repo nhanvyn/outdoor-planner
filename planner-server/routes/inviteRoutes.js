@@ -9,6 +9,6 @@ app.use(express.json())
 router.post('/', protect, inviteController.addInvite)
       .get('/', protect, inviteController.getInvites)
       .delete('/byActivity/:id', protect, inviteController.deleteInvitesByActivityID)
-  // .delete('/:id', protect, inviteController.deleteInvite)
+      .delete('/', protect, inviteController.deleteInvited)
   // .put('/:id', protect, inviteController.updateInvite)
 module.exports = router

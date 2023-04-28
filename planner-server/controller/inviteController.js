@@ -38,8 +38,8 @@ const getInvites = asyncHandler(async (req, res) => {
   try {
     //console.log("check req user", req.user)
     const invites = await Invite.find({ host: req.user.id })
-    const inviteds = await Invite.find({guest: req.user.id})
-    
+    const inviteds = await Invite.find({ guest: req.user.id })
+
     //console.log("check invites and invited: ", invites, inviteds)
     return res.status(200).json({
       invites, inviteds
@@ -58,7 +58,7 @@ const deleteInvitesByActivityID = asyncHandler(async (req, res) => {
 
     return res.status(200).json({
       message: "Deleted " + invites.deletedCount + " invites",
-      activity_id : req.params.id
+      activity_id: req.params.id
     })
 
   } catch (error) {
@@ -90,6 +90,33 @@ const deleteInvite = asyncHandler(async (req, res) => {
   }
 })
 
+
+const deleteInvited = asyncHandler(async (req, res) => {
+  try {
+    const inviteds = req.query.inviteds
+    console.log("In controller: check inviteds: ", inviteds)
+
+    await Promise.all(
+      inviteds.map(async (invited) => {
+        const toBeDeleted = await Invite.findById(invited._id);
+        if (toBeDeleted) {
+          await toBeDeleted.remove();
+        } else {
+          throw new Error(`Invited not found with id: ${invited._id}`);
+        }
+      })
+    );
+
+    return res.status(200).json({
+      message: "Deleted inviteds"
+    })
+
+  } catch (error) {
+    console.log("In controller Error: Deleted inviteds", error)
+    return res.status(400).json({ message: 'Error deleting your Inviteds', error: error.message });
+  }
+})
+
 const updateInvite = asyncHandler(async (req, res) => {
   try {
     const Invite = await Invite.findById(req.params.id)
@@ -110,7 +137,6 @@ const updateInvite = asyncHandler(async (req, res) => {
       message: "Successfully updated Invite",
       updated: updatedAct
     })
-
   } catch (error) {
     return res.status(400).json({ message: 'Error updating your Invite', error: error.message });
   }
@@ -123,5 +149,6 @@ module.exports = {
   getInvites,
   deleteInvite,
   updateInvite,
-  deleteInvitesByActivityID
+  deleteInvitesByActivityID,
+  deleteInvited
 }

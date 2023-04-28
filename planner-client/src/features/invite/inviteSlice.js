@@ -63,6 +63,18 @@ export const deleteInvite = createAsyncThunk('invite/deleteInvite', async (invit
 })
 
 
+export const deleteInvited = createAsyncThunk('invite/deleteInvited', async (inviteds, thunkAPI) => {
+  try {
+    const token = thunkAPI.getState().auth.user.token
+    return await inviteService.deleteInvited(inviteds, token)
+  } catch (error) {
+    const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString()
+    return thunkAPI.rejectWithValue(message)
+  }
+})
+
+
+
 
 export const updateInvite = createAsyncThunk('invite/updateInvite', async ({ invite_id, formData }, thunkAPI) => {
   try {
@@ -75,6 +87,8 @@ export const updateInvite = createAsyncThunk('invite/updateInvite', async ({ inv
     return thunkAPI.rejectWithValue(message)
   }
 })
+
+
 
 
 export const inviteSlice = createSlice({
@@ -109,8 +123,8 @@ export const inviteSlice = createSlice({
     }).addCase(getInvites.fulfilled, (state, action) => {
       state.isLoading = false
       state.isSuccess = true
-      state.message = action.payload
-      state.fetched_invites = action.payload
+      state.message = "Successfully get all Invites"
+      // state.fetched_invites = action.payload
       console.log("check payload: ", action.payload)
       state.user_invites = action.payload.invites
       state.user_inviteds = action.payload.inviteds
@@ -120,23 +134,26 @@ export const inviteSlice = createSlice({
     }).addCase(deleteInvitesByActivityID.pending, (state) => {
       state.isLoading = true
     }).addCase(deleteInvitesByActivityID.fulfilled, (state, action) => {
-      console.log("in slice check fetched invites2: ", current(state.fetched_invites))
+      // console.log("in slice check fetched invites2: ", current(state.fetched_invites))
       state.isLoading = false
       state.isSuccess = true
       state.message = action.payload
-      console.log("check  invites array bf filter: ", current(state.fetched_invites).invites)
+      // console.log("check  invites array bf filter: ", current(state.fetched_invites).invites)
     }).addCase(deleteInvitesByActivityID.rejected, (state, action) => {
       console.log("deleteInvitesByActivityID rejected: ", action.payload)
     })
-      .addCase(deleteInvite.pending, (state) => {
-        // state.isLoading = true
-      }).addCase(deleteInvite.fulfilled, (state, action) => {
-        // state.isLoading = false
-        // state.isSuccess = true
-        // state.message = action.payload.message
+      .addCase(deleteInvited.pending, (state) => {
+        state.isLoading = true
+      }).addCase(deleteInvited.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.isSuccess = true
+        state.message = action.payload
         // state.fetched_invites = state.fetched_invites.filter((invite) => invite._id !== action.payload.id)
 
-      }).addCase(updateInvite.pending, (state) => {
+      }).addCase(deleteInvited.rejected, (state, action) => {
+        console.log("deleteInvited rejected: ", action.payload)
+      })
+      .addCase(updateInvite.pending, (state) => {
         // state.isLoading = true
       }).addCase(updateInvite.fulfilled, (state, action) => {
         // state.isLoading = false

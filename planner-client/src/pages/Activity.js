@@ -11,7 +11,7 @@ import { reset, getActivities, deleteActivity, updateActivity, getActivitiesByIn
 import { BiSearch } from 'react-icons/bi';
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
-import { addInvites, deleteInvitesByActivityID, getInvites, reset as resetInvite } from "../features/invite/inviteSlice";
+import { addInvites, deleteInvitesByActivityID, getInvites, reset as resetInvite, deleteInvited } from "../features/invite/inviteSlice";
 import { getGuests } from "../features/auth/authSlice";
 import { HiUserCircle } from 'react-icons/hi'
 
@@ -25,14 +25,14 @@ const Activity = () => {
   const key = process.env.REACT_APP_API_KEY
 
   const { user, guests } = useSelector((state) => state.auth)
-  const { fetched_activities, invited_activities ,message, isError } = useSelector((state) => state.act)
-  const { fetched_invites } = useSelector((state) => state.invite)
-  
+  const { fetched_activities, invited_activities, message, isError } = useSelector((state) => state.act)
+  const { fetched_invites, user_invites, user_inviteds } = useSelector((state) => state.invite)
+
   const [allActivities, setAllActivities] = useState([])
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  
+
   // fetching user's activities and invites activity
   useEffect(() => {
     dispatch(getActivities())
@@ -43,6 +43,7 @@ const Activity = () => {
     return () => {
       // reset activities state only when unmouted
       dispatch(reset())
+      dispatch(resetInvite())
     }
   }, [dispatch, isError, navigate, user])
 
@@ -53,31 +54,31 @@ const Activity = () => {
   }, [fetched_activities, message])
 
   useEffect(() => {
-    console.log("check fetched invites", fetched_invites, " check: " , fetched_invites.inviteds)
-    if (fetched_invites.inviteds && fetched_invites.inviteds.length > 0){
-      dispatch(getActivitiesByInvites(fetched_invites.inviteds))
-    }
-  }, [fetched_invites])
+    console.log("check fetched invites", user_invites, " check inviteds: ", user_inviteds)
+    if (user_inviteds.length > 0)
+      dispatch(getActivitiesByInvites(user_inviteds))
 
-  useEffect(()=>{
-    // console.log("rerender: check invited activities", invited_activities)
-    if (invited_activities.length > 0){
-      
+  }, [user_invites, user_inviteds])
+
+  useEffect(() => {
+    //console.log("rerender: check invited activities", invited_activities)
+    if (invited_activities.length > 0) {
+
       // combine all activities and sort by date
       const activities = [...fetched_activities, ...invited_activities];
       activities.sort((a, b) => new Date(a.date) - new Date(b.date));
       setAllActivities(activities);
-    } else if (fetched_activities.length > 0 && fetched_invites.invites){
+    } else if (fetched_activities.length > 0 && user_invites) {
       setAllActivities(fetched_activities)
     } else {
       setAllActivities([])
     }
   }, [invited_activities, fetched_activities])
 
-  
+
 
   useEffect(() => {
-    if (allActivities.length>0){
+    if (allActivities.length > 0) {
       // console.log("check all activities: ", allActivities)
     }
   }, [allActivities])
@@ -120,6 +121,7 @@ const Activity = () => {
           weather: updated_weather
         }
         dispatch(updateActivity({ activity_id: activityID, formData: updatedFormData }))
+
       }
     }).catch((error) => {
       console.log(error)
@@ -161,7 +163,7 @@ const Activity = () => {
   }
 
 
-  // Modal
+  // Modal controllers
   const [show, setShow] = useState(false);
   const [activePage, setActivePage] = useState(1);
 
@@ -193,6 +195,16 @@ const Activity = () => {
       setFromInput(activity.from);
       setToInput(activity.to);
       setWeather(activity.weather)
+      const invitesByID = getInvitedsByID(activity)
+      const currentGuests = getInvitesByID(activity).map((invite) => {
+        return {
+          _id: invite.guest,
+          username: invite.guestname
+        }
+      })
+      console.log("check setPotentialInvite result: ", currentGuests, " act.name: ", activity.name, " actvityID:", activity._id , " invitesByID = ", invitesByID)
+      setPotentialInvites(currentGuests)
+
       if (event.target.name === "addfriend") {
         nextPage()
       }
@@ -201,27 +213,27 @@ const Activity = () => {
   };
 
 
-  // search
+  // search filter
 
   const [filGuests, setFilGuests] = useState([])
   const [value, setValue] = useState("")
-  const [invites, setInvites] = useState([])
+  const [potentialInvites, setPotentialInvites] = useState([])
   const handleInvite = (guest) => {
-    const guestExists = invites.some((existingGuest) => existingGuest._id === guest._id);
+    const guestExists = potentialInvites.some((existingGuest) => existingGuest._id === guest._id);
     if (guestExists) {
       return;
     }
 
-    const newInvites = [...invites, guest]
-    setInvites(newInvites)
+    const newInvites = [...potentialInvites, guest]
+    setPotentialInvites(newInvites)
   }
   const onWordTyped = (e) => {
     setValue(e.target.value)
   }
 
   const handleRemove = (guestToRemove) => {
-    const newInvites = invites.filter((guest) => guest !== guestToRemove)
-    setInvites(newInvites)
+    const newInvites = potentialInvites.filter((guest) => guest !== guestToRemove)
+    setPotentialInvites(newInvites)
   }
 
   useEffect(() => {
@@ -236,23 +248,25 @@ const Activity = () => {
     setFilGuests(users)
   }, [value, guests])
 
-  
+
 
   // helper functions
   const getInvitedsByID = (act) => {
     let invites = []
-    if (act.host !== user._id){
-      invites = fetched_invites.inviteds.filter((invite) => invite.activity === act._id);
+    if (act.host !== user._id) {
+      invites = user_inviteds.filter((invite) => invite.activity === act._id);
     }
     return invites;
   }
   const getInvitesByID = (act) => {
     let invites = []
     if (act.host === user._id) {
-      invites = fetched_invites.invites.filter((invite) => invite.activity === act._id);
+      invites = user_invites.filter((invite) => invite.activity === act._id);
+      // console.log("ATTENSTION: invites = ", invites, " act.name = " ,act.name, " user.invites = ", user_invites)
     }
     return invites;
   }
+
 
   const handleDelete = (act) => {
     if (act.host === user._id) {
@@ -261,10 +275,15 @@ const Activity = () => {
     }
     else {
       showSuccessToast("Deleting invitation")
-      // remove all invites 
-      // remove all invited_activities
-      dispatch(removeInvitedActivitiesByID(act._id))
+      const inviteds = getInvitedsByID(act)
+      console.log("TO be deleted: ", inviteds)
       
+        // remove all invited_activities in redux
+      dispatch(removeInvitedActivitiesByID(act._id))
+    
+      // remove all invites in db
+      dispatch(deleteInvited(inviteds))
+
     }
 
   }
@@ -281,9 +300,9 @@ const Activity = () => {
                 <div key={act._id}>
                   <div className="list-group-item list-group-item-action flex-column align-items-start" >
                     <div className="d-flex w-100 justify-content-between">
-                      <h5 className="mb-1">{act.name} {act.host === user._id ? "" : "- Host: " + getInvitedsByID(act)[0].hostname}</h5>
-                      <button type="button" className="btn-close" aria-label="Close" 
-                      onClick={() => handleDelete(act)}>
+                      <h5 className="mb-1">{act.name} {act.host !== user._id && getInvitedsByID(act).length > 0 ? "- Host: " + getInvitedsByID(act)[0].hostname : ""}</h5>
+                      <button type="button" className="btn-close" aria-label="Close"
+                        onClick={() => handleDelete(act)}>
                       </button>
                     </div>
 
@@ -300,16 +319,16 @@ const Activity = () => {
                         <button type="button" name="edit" className="btn btn-warning btn-sm mt-2" onClick={(e) => handleShow(e, act)}>Edit information</button>
                         <button type="button" name="addfriend" className="btn btn-primary btn-sm mt-2" onClick={(e) => handleShow(e, act)} style={{ marginLeft: "0.5rem" }}>Add Friend</button>
                       </div>
-                      ): 
-                      (
+                      ) :
+                        (
                           <>
                             <div>
                               <button type="button" name="edit" className="btn btn-warning btn-sm mt-2" onClick={(e) => showErrorToast(`You do not have permission to edit information from host`)}>Edit information</button>
                               <button type="button" name="addfriend" className="btn btn-primary btn-sm mt-2" onClick={(e) => showErrorToast(`Your do not have permission to add friend from host`)} style={{ marginLeft: "0.5rem" }}>Add Friend</button>
                             </div>
                           </>
-                      )}
-                      
+                        )}
+
 
 
                       <div>
@@ -324,7 +343,7 @@ const Activity = () => {
                       </div>
                     </div>
 
-                    
+
                   </div>
 
                   <Modal show={show} onHide={handleClose}>
@@ -434,62 +453,62 @@ const Activity = () => {
 
 
                       ) : (
-                          <Form>
+                        <Form>
 
-                            <Form.Group>
+                          <Form.Group>
 
-                              <InputGroup>
-                                <span className="input-group-text bg-white border-end-0"><BiSearch /></span>
-                                <Form.Control
-                                  type="search"
-                                  className="border-start-0"
-                                  placeholder="Search here.."
-                                  value={value}
-                                  onChange={onWordTyped}
-                                />
-                              </InputGroup>
-                              <ul className="list-group" style={{ maxHeight: " 200px", overflowY: "scroll" }}>
+                            <InputGroup>
+                              <span className="input-group-text bg-white border-end-0"><BiSearch /></span>
+                              <Form.Control
+                                type="search"
+                                className="border-start-0"
+                                placeholder="Search here.."
+                                value={value}
+                                onChange={onWordTyped}
+                              />
+                            </InputGroup>
+                            <ul className="list-group" style={{ maxHeight: " 200px", overflowY: "scroll" }}>
 
-                                {
-                                  filGuests.map((guest) => (
+                              {
+                                filGuests.map((guest) => (
 
-                                    <li className="list-group-item list-group-item-action d-flex justify-content-between align-items-center" key={guest._id} style={{ cursor: "pointer" }} onClick={() => handleInvite(guest)}>
-                                      <div> <HiUserCircle size={24} className="me-2" />
-                                        {guest.username}
-                                      </div>
+                                  <li className="list-group-item list-group-item-action d-flex justify-content-between align-items-center" key={guest._id} style={{ cursor: "pointer" }} onClick={() => handleInvite(guest)}>
+                                    <div> <HiUserCircle size={24} className="me-2" />
+                                      {guest.username}
+                                    </div>
 
-                                    </li>
-                                  ))
-                                }
+                                  </li>
+                                ))
+                              }
 
-                              </ul>
-                            </Form.Group>
+                            </ul>
+                          </Form.Group>
 
-                            <Form.Group className="mt-1">
-                              <Form.Label className="ms-1" style={{ fontSize: '10px', color: '#999999' }}>Invite list</Form.Label>
-                              <ul className="list-group" style={{ maxHeight: " 250px", overflowY: "scroll" }}>
+                          <Form.Group className="mt-1">
+                            <Form.Label className="ms-1" style={{ fontSize: '10px', color: '#999999' }}>Invite list</Form.Label>
+                            <ul className="list-group" style={{ maxHeight: " 250px", overflowY: "scroll" }}>
 
-                                {
-                                  invites.map((guest) => (
-                                    <li className="list-group-item  d-flex justify-content-between align-items-center" key={guest._id}>
-                                      <div> <HiUserCircle size={24} className="me-2" />
-                                        {guest.username}
-                                      </div>
+                              {
+                                potentialInvites.map((invite) => (
+                                  <li className="list-group-item  d-flex justify-content-between align-items-center" key={invite._id}>
+                                    <div> <HiUserCircle size={24} className="me-2" />
+                                      {invite.username}
+                                    </div>
 
-                                      <Button variant="primary" onClick={() => handleRemove(guest)}>
-                                        Remove
-                                      </Button>
-                                    </li>
-                                  ))
-                                }
-                         
-                                
-
-                              </ul>
-                            </Form.Group>
+                                    <Button variant="primary" onClick={() => handleRemove(invite)}>
+                                      Remove
+                                    </Button>
+                                  </li>
+                                ))
+                              }
 
 
-                          </Form>
+
+                            </ul>
+                          </Form.Group>
+
+
+                        </Form>
                       )}
                     </Modal.Body>
                   </Modal>

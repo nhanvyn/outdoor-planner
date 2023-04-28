@@ -74,6 +74,7 @@ export const activitySlice = createSlice({
     reset: (state) => {
       state.created_activities = initialState.created_activities;
       state.fetched_activities = initialState.fetched_activities;
+      state.invited_activities = initialState.invited_activities;
       state.isError = initialState.isError;
       state.isSuccess = initialState.isSuccess;
       state.isLoading = initialState.isLoading;

@@ -52,6 +52,20 @@ const deleteInvite = async (invite_id, token) => {
   return response.data
 }
 
+const deleteInvited = async (inviteds, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params: {
+      inviteds
+    },
+  }
+  const response = await axios.delete(API_URL + "/", config)
+  return response.data
+}
+
+
 const updateInvite = async (invite_id, formData, token) => {
 
   const config = {
@@ -72,6 +86,7 @@ const authService = {
   deleteInvite,
   updateInvite,
   getInvites,
+  deleteInvited,
   deleteInvitesByActivityID
 }
 
