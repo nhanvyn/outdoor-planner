@@ -5,9 +5,9 @@ const mode = process.env.MODE
 let API_URL = 'http://localhost:3500/users'
 if (mode === "production"){
   API_URL = "https://outplanner.onrender.com/users"
-  console.log("production url: ", API_URL)
+  console.log("production url: ", API_URL, " mode: ", mode)
 } else {
-  console.log("development url", API_URL)
+  console.log("development url", API_URL, " mode: ", mode)
 }
 
 const register = async (userData) => {
