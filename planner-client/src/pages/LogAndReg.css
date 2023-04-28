@@ -1,0 +1,12 @@
+@media (min-width: 576px) {
+  .custom-width {
+    width: 25% !important;
+  }
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 852px) {
+  .custom-width {
+    width: 50% !important;
+  }
+}

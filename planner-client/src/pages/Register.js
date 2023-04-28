@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from "react-router-dom";
 import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { register, reset } from "../features/auth/authSlice";
-
+import "./LogAndReg.css"
 const Register = () => {
 
   const [formData, setFormData] = useState({
@@ -60,7 +60,7 @@ const Register = () => {
   return (
 
     <div className='register'>
-      <Container className="w-25" style={{ border: "solid rgb(197, 184, 184) 0.5px " }} >
+      <Container className="custom-width" style={{ border: "solid rgb(197, 184, 184) 0.5px " }} >
         <Form onSubmit={onSubmit}>
           <h1 className='text-center'>REGISTER</h1>
           <Form.Group className="mb-3" controlId="formBasicEmail">

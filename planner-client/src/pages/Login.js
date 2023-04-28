@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { login, reset } from "../features/auth/authSlice";
 import { useEffect, useState } from "react";
 import { showSuccessToast, showErrorToast } from '../utils/toast';
+import "./LogAndReg.css"
 const Login = () => {
 
   const [formData, setFormData] = useState({
@@ -50,7 +51,7 @@ const Login = () => {
   return (
 
     <div className='login'>
-      <Container className="w-25" style={{ border: "solid rgb(197, 184, 184) 0.5px " }}>
+      <Container className="custom-width" style={{ border: "solid rgb(197, 184, 184) 0.5px " }}>
         <Form onSubmit={onSubmit}>
           <h1 className='text-center'>LOGIN</h1>
           <Form.Group className="mb-3" controlId="formBasicEmail">
