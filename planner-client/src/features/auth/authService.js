@@ -4,7 +4,10 @@ import axios from 'axios'
 const mode = process.env.MODE
 let API_URL = 'http://localhost:3500/users'
 if (mode === "production"){
-  API_URL = "https://outplanner.onrender.com"
+  API_URL = "https://outplanner.onrender.com/users"
+  console.log("production url: ", API_URL)
+} else {
+  console.log("development url", API_URL)
 }
 
 const register = async (userData) => {
