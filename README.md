@@ -11,7 +11,7 @@
   </p>
   <h2>Live Demo</h2>
   <p>
-    You can check out a live demo of the OutPlanner web application at: <a href="https://outplanner-frontend.onrender.com/" target="_blank">https://outplanner-frontend.onrender.com/</a>
+    Check out a live demo of the OutPlanner web application at: <a href="https://outplanner-frontend.onrender.com/" target="_blank">https://outplanner-frontend.onrender.com/</a>
   </p>
   <h2>Installation</h2>
   <p>Follow these steps to set up the OutPlanner application on your local machine:</p>
