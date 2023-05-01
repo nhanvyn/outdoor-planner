@@ -14,6 +14,7 @@ import Login from "./pages/Login.js";
 import Register from "./pages/Register.js";
 import Navigation from "./comps/Navigation";
 import Activity from "./pages/Activity.js";
+import About from "./pages/About.js";
 import { Container } from "react-bootstrap";
 import { useState } from "react";
 
@@ -34,18 +35,9 @@ function App() {
 
             <Route path="/Activities" element={<Activity />} />
 
-
-            <Route path="/Contact" element={
-
-              <Container>
-                <p>Contact me at: abc@example.ca </p>
-              </Container>
-
-            } />
-
             <Route path="/Login" element={<Login />} />
             <Route path="/Register" element={<Register />} />
-
+            <Route path="/About" element={<About/>}/>
           </Routes>
 
 

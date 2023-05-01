@@ -101,9 +101,17 @@ const Register = () => {
           <div className="mt-3 d-flex justify-content-center gap-2 mb-5">
 
 
-            <Button type="submit">
-              Create Account
-            </Button>
+            {isLoading ? (
+              <div className="text-center">
+                <div className="spinner-border" role="status">
+                  <span className="sr-only">Loading...</span>
+                </div>
+              </div>
+            ) : (
+              <Button type="submit">
+                Register
+              </Button>
+            )}
 
           </div>
         </Form>

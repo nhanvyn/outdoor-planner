@@ -42,6 +42,7 @@ const Navigation = () => {
                 </Nav>
 
                 <Nav>
+                  <Nav.Link as={Link} to="/About">About</Nav.Link>
                   <Nav.Link as={Link} to="/Login">Login</Nav.Link>
                   <Nav.Link as={Link} to="/Register">Register</Nav.Link>
                 </Nav>
@@ -55,7 +56,7 @@ const Navigation = () => {
                 <Nav className="me-auto">
                 </Nav>
                 <Nav>
-
+                  <Nav.Link as={Link} to="/About">About</Nav.Link>
                   <Nav.Link as={Link} to="/Activities">Activities</Nav.Link>
                   <Nav.Link onClick={onLogout}>Logout</Nav.Link>
                   <Nav.Link>Welcome, {user.name}</Nav.Link>
